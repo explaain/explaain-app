@@ -8,9 +8,10 @@ var layers = 0;
 var temp;
 
 
-var importCardsByType = function(type, openFirstCard) {
+var importCardsByType = function(source, type, openFirstCard) {
+  source = source.replace(/\/$/, "");
   $.ajax({
-     url: "//explaain-api-develop.herokuapp.com/" + type + "/search"
+     url: source + '/' + type + "/search"
    }).done(function(json) {
     //  cards = json;
      for (var i in json) {
@@ -30,14 +31,14 @@ var importCardsByType = function(type, openFirstCard) {
    });
 }
 
-
-if (getParameterByName('db') == 'true') {
-  importCardsByType('Detail', false);
-  importCardsByType('Event', false);
-  importCardsByType('Headline', false);
-  importCardsByType('Organization', false);
-  importCardsByType('Person', true);
-  importCardsByType('Place', false);
+var dataSource = getParameterByName('source');
+if ( dataSource != 'googledoc' ) {
+  importCardsByType(dataSource, 'Detail', false);
+  importCardsByType(dataSource, 'Event', false);
+  importCardsByType(dataSource, 'Headline', false);
+  importCardsByType(dataSource, 'Organization', false);
+  importCardsByType(dataSource, 'Person', true);
+  importCardsByType(dataSource, 'Place', false);
 
 } else {
 
