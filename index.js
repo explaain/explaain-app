@@ -13,13 +13,13 @@ app.use(express.static(__dirname + '/public'));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-app.get('/', function(request, response) {
-  response.render('pages/index');
-});
+// app.get('/', function(request, response) {
+//   response.render('pages/index');
+// });
 
 
 /* Temporary? */
-app.get('/demo', function(request, response) {
+app.get('/', function(request, response) {
   var MobileDetect = require('mobile-detect'),
       md = new MobileDetect(request.headers['user-agent']);
       if (md.mobile() == null && md.tablet() == null) {
