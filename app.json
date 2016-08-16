@@ -1,0 +1,8 @@
+{
+  "name": "Explaain",
+  "description": "News, but how your mind works",
+  "repository": "https://github.com/jeremynevans/explaain-landing",
+  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "keywords": ["Explaain", "news", "current affairs", "interactive", "news tutor", "issue", "politics", "facts", "learn news", "teach news", "article", "mind map", "fact check"],
+  "image": "heroku/nodejs"
+}

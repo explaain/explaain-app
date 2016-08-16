@@ -1,0 +1,21 @@
+{
+  "short_name": "Explaain",
+  "name": "Explaain - News Explained Simply",
+  "start_url": "/demo",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/mobile-icon.png",
+      "sizes": "296x296",
+      "type": "image/png"
+    }
+  ],
+  "background_color": "#dddddd",
+  "theme_color": "#ff6e73",
+  "display": "standalone",
+  "orientation": "portrait"
+}
