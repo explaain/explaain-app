@@ -6,23 +6,32 @@ var waitingForDoctop = true;
 var ongoingKeyCounter = 0;
 var layers = 0;
 var temp;
-
-
-// Tell the page to resize the iframe after content has loaded into it
-window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
-
-// Tell the page to resize the iframe if the page has been reized
-$(window.parent).resize(function() {
-  window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
-});
+var frameId;
 
 
 if (touchscreen != true) {
   $('body').addClass('desktop');
 }
-if (getParameterByName('embed') == 'true') {
-  $('body').addClass('embed');
+if (getParameterByName('frameId')) {
+  frameId = getParameterByName('frameId');
 }
+if (getParameterByName('embed') == 'true') {
+
+  // Tell the page to resize the iframe after content has loaded into it
+  window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
+
+  // Tell the page to resize the iframe if the page has been reized
+  $(window).resize(function() {
+    window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
+  });
+}
+
+var hideOverlay = function() {
+  if (getParameterByName('embedType') == 'overlay') {
+    window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
+  }
+}
+
 
 
 var importCardsByType = function(source, type, openFirstCard) {
@@ -83,11 +92,16 @@ if (initialCardUrl) {
 } else {
 
   if ( dataSource != 'googledoc' ) {
+    var importInitialCard = true;
+    if (getParameterByName('embedType') == 'overlay') {
+      importInitialCard = false;
+    }
+    console.log(importInitialCard);
     importCardsByType(dataSource, 'Detail', false);
     importCardsByType(dataSource, 'Event', false);
     importCardsByType(dataSource, 'Headline', false);
     importCardsByType(dataSource, 'Organization', false);
-    importCardsByType(dataSource, 'Person', true);
+    importCardsByType(dataSource, 'Person', importInitialCard);
     importCardsByType(dataSource, 'Place', false);
 
   } else {
@@ -266,20 +280,24 @@ var scrollToCard = function(layer, slide) {
 //UI Interaction
 $(".cards").on("click", "a", function(event){
   event.preventDefault();
-  var slide = $(this).index();
-  var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
-  temp = $(this).closest('.layer > div');
-  var layer = getLayerNumber($(this));
-  var allKeys = [];
-  $.each($(this).closest('.body-content').find('a'), function(i, link) {
-    allKeys.push($(link).attr('href'));//.substring(1));
-  });
-  console.log(allKeys);
-  layer++;
-  if (layer ==  layers) {
-    openLayer(layer, allKeys, slide, slideFrom, -1);
+  if (getParameterByName('embedLinkRoute') == 'true') {
+    window.parent.postMessage({ frameId: frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
   } else {
-    layerGoToSlide(layer, slide);
+    var slide = $(this).index();
+    var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
+    temp = $(this).closest('.layer > div');
+    var layer = getLayerNumber($(this));
+    var allKeys = [];
+    $.each($(this).closest('.body-content').find('a'), function(i, link) {
+      allKeys.push($(link).attr('href'));//.substring(1));
+    });
+    console.log(allKeys);
+    layer++;
+    if (layer ==  layers) {
+      openLayer(layer, allKeys, slide, slideFrom, -1);
+    } else {
+      layerGoToSlide(layer, slide);
+    }
   }
 });
 $(".cards").on("click", "i.close", function(){
@@ -420,6 +438,16 @@ if (getParameterByName('editing') == 'true') {
           }
      }, false);
 }
+
+window.addEventListener('message', function(event) {
+   switch (event.data.action) {
+      case "open": //Does exactly the same as 'preview' but the card id variable is called 'key' not 'id'
+        console.log('open!!!');
+        closeAllLayers();
+        openLayer(0, [event.data.key], 0, 0);
+        break;
+      }
+ }, false);
 
 
 function updateCard(uri) {

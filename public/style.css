@@ -39,6 +39,22 @@ body.embed .logo {
 }
 
 
+.overlay-close-button {
+  display: none;
+  padding: 5px 10px;
+  color: #fff !important;
+  font-family: sans-serif;
+  float: right;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 50px;
+  border: 2px solid #fff;
+}
+body.embed.overlay .overlay-close-button {
+  display: block;
+}
+
+
 .cards {
   margin: 0 auto;
   margin-top: 80px;
@@ -63,7 +79,7 @@ body.embed .cards {
   padding: 0 5px;
 }
 
-body.embed .card {
+body.embed .card .card-visible {
   border: 1px solid #ddd;
   border-radius: 10px;
 }
