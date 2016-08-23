@@ -8,6 +8,23 @@ var layers = 0;
 var temp;
 
 
+// // Tell the page to resize the iframe after content has loaded into it
+// window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
+//
+// // Tell the page to resize the iframe if the page has been reized
+// $(window.parent).resize(function() {
+//   window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
+// });
+
+
+if (touchscreen != true) {
+  $('body').addClass('desktop');
+}
+if (getParameterByName('embed') == 'true') {
+  $('body').addClass('embed');
+}
+
+
 var importCardsByType = function(source, type, openFirstCard) {
   source = source.replace(/\/$/, "");
   $.ajax({
@@ -19,64 +36,86 @@ var importCardsByType = function(source, type, openFirstCard) {
        cards[key] = json[i];
        cards[key].key = cards[key]['@id'];
        cards[key].title = cards[key].name;
-      //  cards[key].body = insertMarkdownLinks(cards[key].description, cards[key].links);
-        console.log(key);
        cards[key].body = parseMarkdown(cards[key].description);
      }
-     console.log(json);
-     console.log(cards);
      if (openFirstCard) {
        openLayer(0, [json[0]['@id']], 0, -1);
      }
    });
 }
 
-var dataSource = getParameterByName('source');
-if ( dataSource != 'googledoc' ) {
-  importCardsByType(dataSource, 'Detail', false);
-  importCardsByType(dataSource, 'Event', false);
-  importCardsByType(dataSource, 'Headline', false);
-  importCardsByType(dataSource, 'Organization', false);
-  importCardsByType(dataSource, 'Person', true);
-  importCardsByType(dataSource, 'Place', false);
+var importCardByUrl= function(url) {
+  $.ajax({
+     url: url
+   }).done(function(json) {
+     var key = json['@id'];
+     cards[key] = json;
+     cards[key].key = cards[key]['@id'];
+     cards[key].title = cards[key].name;
+     cards[key].body = parseMarkdown(cards[key].description);
+     openLayer(0, [json['@id']], 0, -1);
+   });
+}
 
+var importCardsBySearch = function(url) {
+  $.ajax({
+     url: url
+   }).done(function(json) {
+    //  cards = json;
+     for (var i in json) {
+       var key = json[i]['@id'];
+       cards[key] = json[i];
+       cards[key].key = cards[key]['@id'];
+       cards[key].title = cards[key].name;
+       cards[key].body = parseMarkdown(cards[key].description);
+     }
+     openLayer(0, [json[0]['@id']], 0, -1);
+   });
+}
+
+var dataSource = getParameterByName('source') || defaultSource || 'http://api.explaain.com';
+var initialCardUrl = getParameterByName('cardUrl');
+var initialSearchUrl = getParameterByName('searchUrl');
+if (initialCardUrl) {
+  importCardByUrl(initialCardUrl);
+} else if (initialSearchUrl) {
+  importCardsBySearch(initialSearchUrl);
 } else {
 
-  $.doctop({
-    url: '//docs.google.com/document/d/1L_yGS9DQeCCY49MIVVpuB4Vaiz6o7P3BnEbcYqox10A/pub',
-    archieml: true,
-    callback: function(d){
-      if (waitingForDoctop) {
-        waitingForDoctop = false;
-        console.dir(d);
-        tempCards = d.copy.archie.cards;
-        for (i=0; i<tempCards.length; i++) {
-          if (tempCards[i].id != "") {
-            cards[tempCards[i].id] = tempCards[i];
+  if ( dataSource != 'googledoc' ) {
+    importCardsByType(dataSource, 'Detail', false);
+    importCardsByType(dataSource, 'Event', false);
+    importCardsByType(dataSource, 'Headline', false);
+    importCardsByType(dataSource, 'Organization', false);
+    importCardsByType(dataSource, 'Person', true);
+    importCardsByType(dataSource, 'Place', false);
+
+  } else {
+
+    $.doctop({
+      url: '//docs.google.com/document/d/1L_yGS9DQeCCY49MIVVpuB4Vaiz6o7P3BnEbcYqox10A/pub',
+      archieml: true,
+      callback: function(d){
+        if (waitingForDoctop) {
+          waitingForDoctop = false;
+          console.dir(d);
+          tempCards = d.copy.archie.cards;
+          for (i=0; i<tempCards.length; i++) {
+            if (tempCards[i].id != "") {
+              cards[tempCards[i].id] = tempCards[i];
+            }
           }
+          openLayer(0, [0], 0, -1);
         }
-        openLayer(0, [0], 0, -1);
       }
-    }
-  });
+    });
 
-  window.setTimeout(function() {
-    // if (waitingForDoctop) {
-      waitingForDoctop = false;
-      console.log('Doctop not loaded - using backup data...');
-      // cards = {"0":{"id":"0","topic":"Heathrow Drone","title":"Drone hits Heathrow plane","body":"<a href=\"#1\">A British Airways flight from Geneva</a> is <a href=\"#2\">believed to have hit a drone</a> before <a href=\"#8\">landing safely at Heathrow</a> airport, raising <a href=\"#3\">concerns over aviation safety</a>.","headline":"true","coverImage":"https://pixabay.com/static/uploads/photo/2015/12/29/13/13/drone-1112752_960_720.jpg","draftOrAuthor":"yukiko"},"1":{"id":"1","topic":"Heathrow Drone","title":"A British Airways flight","body":"The flight BA727 from Geneva to Heathrow was carrying 132 passengers and 5 crew. <a href=\"#5\">The Airbus A320</a> plane <a href=\"#7\">was cleared to take off the next flight after being examined</a>.","draftOrAuthor":"yukiko"},"2":{"id":"2","topic":"Heathrow Drone","title":"Believed to have hit a drone","body":"The pilot reported an object that is believed to be a drone struck the front of <a href=\"#1\">the flight</a>, and it would be the first incident of its kind in the UK if confirmed. \n        <a href=\"#6\">The investigation is underway</a>.","draftOrAuthor":"yukiko"},"3":{"id":"3","topic":"Drone and aviation safety","title":"Concerns over aviation safety and drone","body":"<a href=\"#10\">Pilots have called for an investigation</a> into the likely effects of <a href=\"#9\">a drone strike on an aircraft</a> last month, following <a href=\"#4\">a report on their near-misses</a>.","draftOrAuthor":"yukiko"},"4":{"id":"4","topic":"Drone and aviation safety","title":"Report by the UK Airpox Board","body":"There were 23 near-misses between drones and aircraft in the 6 months between April and October last year.","draftOrAuthor":"yukiko"},"5":{"id":"5","topic":"Heathrow Drone","title":"Airbus A320 family","body":"The A320 manufactured by Airbus typically seats 150 passengers in a two-class cabin, and is commonly used by commercial flights.","draftOrAuthor":"yukiko"},"6":{"id":"6","topic":"Heathrow Drone","title":"Investigation on ‘drone’ claim","body":"Police says no arrests have been made. \n        The British Airline will give the police “every assistance with their investigation”.","draftOrAuthor":"yukiko"},"7":{"id":"7","topic":"Heathrow Drone","title":"Quote","body":"A British Airways spokesperson said: \n        “Our aircraft landed safely, was fully examined by our engineers and it was cleared to operate its next flight”.","draftOrAuthor":"yukiko"},"8":{"id":"8","topic":"Heathrow Drone","title":"Landing safely at Heathrow airport","body":"Despite a hit by an object, believed to be a drone, the flight with 132 passengers and 5 crew <a href=\"#7\">landed safely without damage to the aircraft</a>.","draftOrAuthor":"yukiko"},"9":{"id":"9","topic":"Drone and aviation safety","title":"Drone strike on aircraft","body":"<a href=\"#11\">People who fly drones</a> close to planes could be convicted of endangering aviation safety, which has a maximum prison sentence of five years, according to the Civil Aviation Authority.","draftOrAuthor":"yukiko"},"10":{"id":"10","topic":"Drone and aviation safety","title":"Pilots have called for an investigation","body":"The British Airline Pilots Association wants the Department for Transport and the Civil Aviation Authority to investigate into the effects of <a href=\"#9\">a drone strike on an aircraft</a>.","draftOrAuthor":"yukiko"},"11":{"id":"11","topic":"Drone and aviation safety","title":"People flying drones","body":"<a href=\"#12\">The Civil Aviation Authority is focusing on educating people</a> who use drones, fearing that many of them are not familiar with the legal issues.","draftOrAuthor":"yukiko"},"12":{"id":"12","topic":"Drone and aviation safety","title":"CAA and “dronecode”","body":"The Civil Aviation Authority launched Dronecode to simplify the rules over drones.","draftOrAuthor":"yukiko"}};
-      // cards = $.parseJSON('{"0":{"id":"0","topic":"Trump Backs Brexit","title":"","body":"<a href=\"#1\">Donald Trump</a> has <a href=\"#2\">backed Brexit</a> ahead of <a href=\"#3\">next month`s referendum</a>, <a href=\"#4\">blaming the migration crisis on the EU</a>.","headline":"true","coverImage":"https://assets.donaldjtrump.com/site/hero_image_main_2.jpg","draftOrAuthor":""},"1":{"id":"1","topic":"","title":"Donald Trump","body":"A <a href=\"#5\">controversial</a> <a href=\"#6\">businessman and celebrity</a>, now <a href=\"#7\">the Republican presumptive nominee</a> for <a href=\"#8\">the US presidential elections</a>.","draftOrAuthor":"draft"},"2":{"id":"2","topic":"","title":"","body":"<a href=\"#1\">Trump</a> said <a href=\"#11\">the UK is \"better off\" without the EU</a>, though <a href=\"#10\">stating it wasn’t a recommendation</a>, and <a href=\"#12\">criticised Obama for backing the Remain Campaign</a>.","draftOrAuthor":"draft"},"3":{"id":"3","topic":"","title":"EU Referendum","body":"<a href=\"#18\">Britain will hold a referendum in June</a> on <a href=\"#19\">whether to leave</a> the <a href=\"#21\">European Union</a>, a debate that <a href=\"#20\">is increasingly dividing national opinion</a>.","draftOrAuthor":"draft"},"4":{"id":"4","topic":"","title":"","body":"<a href=\"#1\">Trump</a> said <a href=\"#17\">the migration crisis was \"a horrible thing for Europe\" and \"pushed by the EU\"</a>, following <a href=\"#14\">previous controversial comments on immigration</a>.","draftOrAuthor":"draft"},"5":{"id":"5","topic":"","title":"","body":"<a href=\"#1\">Trump</a> has made controversial remarks on topics including Mexican immigration, Muslims, 9/11, women’s rights and well-known figures including John McCain and Megyn Kelly.","draftOrAuthor":"draft"},"6":{"id":"6","topic":"","title":"","body":"<a href=\"#1\">Trump</a> is known for several businesses including casinos, golf courses, hotels and real estate, along with TV appearances like <a href=\"#22\">The Apprentice</a> and WWE.","draftOrAuthor":"draft"},"7":{"id":"7","topic":"","title":"","body":"<a href=\"#1\">Trump</a> became the presumptive nominee for the <a href=\"#24\">Republican party</a> after <a href=\"#23\">Ted Cruz</a> announced he was dropping out of the presidential race.","draftOrAuthor":"draft"},"8":{"id":"8","topic":"","title":"2016 US Presidential Elections","body":"<a href=\"#1\">Donald Trump</a> and <a href=\"#25\">Hillary Clinton</a> are set to be the candidates in an unconventional Presidential race.","draftOrAuthor":"draft"},"9":{"id":"9","topic":"","title":"","body":"","draftOrAuthor":"draft"},"10":{"id":"10","topic":"","title":"","body":"<a href=\"#1\">Trump</a> said his opinion over <a href=\"#19\">Brexit</a> was just <a href=\"#26\">\"his feeling\"</a> and he wouldn`t make any formal recommendations.","draftOrAuthor":"draft"},"11":{"id":"11","topic":"","title":"UK “better off” without the EU","body":"\\\"I would say [the UK] are better off without [the EU], personally, but I`m not making that as a recommendation, just my feeling.\\” – <a href=\"#1\">Donald Trump</a>","draftOrAuthor":"draft"},"12":{"id":"12","topic":"","title":"","body":"Barack Obama officially supported David Cameron`s campaign to remain in the EU, saying leaving it would affect trade between UK and the US.","draftOrAuthor":"draft"},"13":{"id":"13","topic":"","title":"Migration crisis","body":"Text","draftOrAuthor":"draft"},"14":{"id":"14","topic":"","title":"","body":"<a href=\"#1\">Trump</a> called <a href=\"#15\">for a temporary ban on Muslims entering the US</a>, prompting <a href=\"#16\">a debate over his access to the UK</a>.","draftOrAuthor":"draft"},"15":{"id":"15","topic":"","title":"","body":"<a href=\"#1\">Trump</a>’s proposal was announced last December after the attack in San Bernardino, California, which was inspired by terrorist group Isis.","draftOrAuthor":"draft"},"16":{"id":"16","topic":"","title":"","body":"Half a million people signed a petition asking for Trump to be barred from entering the UK because of his remarks over Muslims.","draftOrAuthor":"draft"},"17":{"id":"17","topic":"","title":"","body":"”I think the migration has been a horrible thing for Europe, a lot of that was pushed by the EU.”  – <a href=\"#1\">Donald Trump</a>","draftOrAuthor":"draft"},"18":{"id":"18","topic":"","title":"","body":"The EU Referendum will be held on 23 June, with the question: ‘Should the UK remain a member of the EU or leave the EU?’. It will be Britain’s second EU referendum.","draftOrAuthor":"draft"},"19":{"id":"19","topic":"","title":"The Brexit debate","body":"The main issues relate to economics, borders, sovereignty and how Britain’s relationship with Europe would change.","draftOrAuthor":"draft"},"20":{"id":"20","topic":"","title":"","body":"The ‘Brexit’ debate has divided the country into Eurosceptics who wish to leave, and Pro-EU backers who wish to remain. The main campaigns are Remain to stay in, and Vote Leave and Leave.EU to exit.","draftOrAuthor":"draft"},"21":{"id":"21","topic":"","title":"European Union","body":"The EU is the politico-economic union of 28 member states that are located primarily in Europe, originally created after WWII.","draftOrAuthor":"draft"},"22":{"id":"22","topic":"","title":"The Apprentice","body":"The Apprentice is an American reality game show that judges the business skills of a group of contestants, and was hosted for many years by <a href=\"#1\">Donald Trump</a>.","draftOrAuthor":"draft"},"23":{"id":"23","topic":"","title":"Ted Cruz","body":"American attorney and politician, who has been a Texas Senator since 2012 and a <a href=\"#24\">Republican</a> candidate in the 2016 US Election Primaries.","draftOrAuthor":"draft"},"24":{"id":"24","topic":"","title":"Republican Party","body":"One of the two major political parties in the United States, the other being its historic rival, the Democratic Party.","draftOrAuthor":"draft"},"25":{"id":"25","topic":"","title":"Hillary Clinton","body":"US politician and candidate for the Democratic presidential nomination in the 2016 election.","draftOrAuthor":"draft"},"26":{"id":"26","topic":"","title":"“Just my feeling”","body":"”I`m not making that as a recommendation, just my feeling” – <a href=\"#1\">Donald Trump</a>","draftOrAuthor":"draft"}}');
-
-      // openLayer(0, [0], 0, -1);
-      // var card = cards[0];
-      // var tempTemplate = cardTemplate(card.id, card.title, card.body, card.coverImage, card.topic, card.headline, true);
-      // tempTemplate = '<div class="layer" id="layer-0">' + tempTemplate + '</div>';
-      // cardDOM = $(tempTemplate).appendTo('.cards');
-      // window.setTimeout(function() {
-      //   $('.card').removeClass('opening');
-      // }, 300);
-    // }
-  }, 300);
+    window.setTimeout(function() {
+      // if (waitingForDoctop) {
+        waitingForDoctop = false;
+        console.log('Doctop not loaded - using backup data...');
+    }, 300);
+  }
 }
 
 
@@ -432,10 +471,4 @@ var insertMarkdownLinks = function(text, links) {
 var parseMarkdown = function(text) {
   console.log(text);
   return markdown.toHTML(text);
-}
-
-
-if (getParameterByName('touchscreen') != 'true') {
-  console.log('h');
-  $('body').addClass('desktop');
 }
