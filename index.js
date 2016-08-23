@@ -1,7 +1,7 @@
-var cool = require('cool-ascii-faces');
 // var sass = require('node-sass');
 var express = require('express');
 var app = express();
+var MobileDetect = require('mobile-detect');
 
 
 app.set('port', (process.env.PORT || 5000));
@@ -17,36 +17,23 @@ app.set('view engine', 'ejs');
 // });
 
 
-/* Temporary? */
+
+var getTouchscreen = function(request) {
+  md = new MobileDetect(request.headers['user-agent']);
+  if (md.mobile() == null && md.tablet() == null) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 app.get('/', function(request, response) {
-  var MobileDetect = require('mobile-detect'),
-      md = new MobileDetect(request.headers['user-agent']);
-      if (md.mobile() == null && md.tablet() == null) {
-        var touchscreen = false;
-      } else {
-        var touchscreen = true;
-      }
+  var touchscreen = getTouchscreen(request);
 
-  response.render('pages/demo', { touchscreen : touchscreen });
+  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE });
 });
 
-app.get('/hello.html', function(request, response) {
-  response.writeHead(301, {
-    'Location': '/'
-  });
-  response.end();
-});
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
-
-// sass.render({
-//   file: 'views/scss.main.scss',
-//   [, options..]
-// }, function(err, result) { /*...*/ });
-// OR
-// var result = sass.renderSync({
-//   file: 'views/scss.main.scss',
-//   outFile: 'public/main1.css'
-// });

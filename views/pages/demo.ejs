@@ -34,11 +34,7 @@
 </head>
 <body>
   <div class="logo"><img src="logo.png"></div>
-  <!-- <div class="your-class" style="margin-top: 50px;">
-    <div style="background:red; height: 40px;">your content</div>
-    <div style="background:red; height: 60px;">your content</div>
-    <div style="background:red; height: 80px;">your content</div>
-  </div> -->
+  <a class="overlay-close-button" href="#" onclick="hideOverlay()">Close</a>
   <div class="cards">
 
   </div>
@@ -50,6 +46,27 @@
   <script src="include/js/doctop.min.js"></script>
   <script src="include/js/archieml.js"></script>
   <script src="include/js/markdown.min.js"></script>
+  <script>
+    var touchscreen = <%= touchscreen %>;
+    var defaultSource = '<%= defaultSource %>';
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    if (getParameterByName('embed') == 'true') {
+      $('body').addClass('embed');
+    }
+    if (getParameterByName('embedType') == 'overlay') {
+      $('body').addClass('overlay');
+    }
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
