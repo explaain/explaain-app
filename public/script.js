@@ -8,13 +8,13 @@ var layers = 0;
 var temp;
 
 
-// // Tell the page to resize the iframe after content has loaded into it
-// window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
-//
-// // Tell the page to resize the iframe if the page has been reized
-// $(window.parent).resize(function() {
-//   window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
-// });
+// Tell the page to resize the iframe after content has loaded into it
+window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
+
+// Tell the page to resize the iframe if the page has been reized
+$(window.parent).resize(function() {
+  window.parent.explaain.resizeIframe($('html').attr('id'), $('body').outerHeight(), $('body').outerWidth());
+});
 
 
 if (touchscreen != true) {
