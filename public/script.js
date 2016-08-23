@@ -27,6 +27,7 @@ if (getParameterByName('embed') == 'true') {
 }
 
 var hideOverlay = function() {
+  closeAllLayers();
   if (getParameterByName('embedType') == 'overlay') {
     window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
   }
