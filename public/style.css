@@ -11,6 +11,10 @@ body.embed {
   background: none;
 }
 
+body.embed.overlay {
+  margin-top: 60px;
+}
+
 a:focus {
   outline: 0;
 }
@@ -62,7 +66,7 @@ body.embed.overlay .overlay-close-button {
 }
 
 body.embed .cards {
-  margin: 20px auto 10px auto;
+  margin: 10px auto;
 }
 
 .layer, .card, .card .card-visible, .card .card-spacer {
@@ -71,7 +75,7 @@ body.embed .cards {
 }
 
 .layer > div {
-  margin-top: -10px;
+  /*margin-top: -10px;*/
 }
 
 .card {

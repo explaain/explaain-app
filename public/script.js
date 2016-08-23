@@ -278,8 +278,16 @@ var scrollToCard = function(layer, slide) {
 
 
 //UI Interaction
+$("html").on("click", function(event){
+  if( !$(event.target).is(".cards") ) {
+    if (getParameterByName('embedType') == 'overlay') {
+      window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
+    }
+  }
+});
 $(".cards").on("click", "a", function(event){
   event.preventDefault();
+  event.stopPropagation();
   if (getParameterByName('embedLinkRoute') == 'true') {
     window.parent.postMessage({ frameId: frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
   } else {
@@ -301,11 +309,13 @@ $(".cards").on("click", "a", function(event){
   }
 });
 $(".cards").on("click", "i.close", function(){
+  event.stopPropagation();
   // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
   closeLayer(layer);
 });
 $(".cards").on("click", ".card", function(){
+  event.stopPropagation();
   var layer = getLayerNumber($(this));
   var targetLayer = layer + 1;
   if(!$(event.target).is("a") && !$(event.target).is("i.close") && !$(event.target).is(".edit-button") && !$(event.target).is(".edit-button i") ) {
@@ -324,6 +334,7 @@ $(".cards").on("click", ".card", function(){
   }
 });
 $(".cards").on("click", ".card .edit-button", function(){
+  event.stopPropagation();
   var key = $(this).closest('.card').attr('data-uri');
   console.log(key);
   window.parent.postMessage({action: 'edit', id: key}, "*");
