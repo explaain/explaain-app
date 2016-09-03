@@ -180,6 +180,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
         title: 'Card not found!',
         body: ''
       };
+      updateCard(key);
     }
     template = template + cardTemplate(card.key, card.title, card.body, card.coverImage, card.topic, card.headline);
   });
