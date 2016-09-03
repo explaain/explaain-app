@@ -467,6 +467,10 @@ function updateCard(uri) {
   $.ajax({
     url: uri
   }).done(function(json) {
+    cards[uri] = json;
+    cards[uri].key = json['@id'];
+    cards[uri].title = json.name;
+    cards[uri].body = parseMarkdown(json.description);
     console.log(json);
     $('.card[data-uri="' + uri + '"]').find('.header-image img').html(json.image);
     $('.card[data-uri="' + uri + '"]').find('.header-image h3').html(json.name);
