@@ -481,6 +481,9 @@ function updateCard(uri) {
     cards[uri].key = json['@id'];
     cards[uri].title = json.name;
     cards[uri].body = parseMarkdown(json.description);
+    if (json.moreDetail) {
+      cards[uri].moreDetail = parseMarkdown(json.moreDetail);
+    }
     console.log(json);
     $('.card[data-uri="' + uri + '"]').find('.header-image img').html(json.image);
     $('.card[data-uri="' + uri + '"]').find('.header-image h3').html(json.name);
