@@ -196,12 +196,12 @@ h2 {
   font-size: 20px;
 }
 
-.body-content {
+.body-content, .more-detail {
   padding: 0 20px;
   line-height: 1.9;
 }
 
-.body-content a {
+.body-content a, .more-detail a {
   padding: 0 3px;
   background: #ebebeb;
   border: 2px solid #ebebeb;
@@ -209,10 +209,18 @@ h2 {
   color: #333;
 }
 
-.body-content a:active, .body-content a.active {
+.body-content a:active, .body-content a.active, .more-detail a:active, .more-detail a.active {
   color: white;
   background: #ff6e73;
   border: 2px solid #ff6e73;
+}
+
+.more-detail > p.label {
+  font-size: 14px;
+  margin-bottom: -20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #888;
 }
 
 .card .edit-button {

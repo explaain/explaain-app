@@ -134,7 +134,7 @@ if (initialCardUrl) {
 }
 
 
-var cardTemplate = function (key, title, body, image, topic, showHeaderImage, standalone) {
+var cardTemplate = function (key, title, body, moreDetail, image, topic, showHeaderImage, standalone) {
   if (!image) {
     image = '//placekitten.com/300/200';
   }
@@ -159,8 +159,16 @@ var cardTemplate = function (key, title, body, image, topic, showHeaderImage, st
                 +         '<p>'
                 +           body.replace(/\s/g,' ')
                 +         '</p>'
+                +       '</div>';
+  if (moreDetail) {
+    template +=         '<div class="more-detail">'
+                +         '<p class="label">More Detail</p>'
+                +         '<p>'
+                +           moreDetail.replace(/\s/g,' ')
+                +         '</p>'
                 +       '</div>'
-                +     '</div>'
+  };
+  template +=         '</div>'
                 +     '<button class="edit-button"><i class="fa fa-pencil" aria-hidden="true"></i></button>'
                 // +     '<div class="card-spacer"></div>'
                 +   '</div>';
@@ -182,7 +190,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
       };
       updateCard(key);
     }
-    template = template + cardTemplate(card.key, card.title, card.body, card.coverImage, card.topic, card.headline);
+    template = template + cardTemplate(card.key, card.title, card.body, card.moreDetail, card.coverImage, card.topic, card.headline);
   });
   var slideFromAttr = slideFrom!=-1 ? 'slide-from="' + slideFrom + '"' : '';
   template = '<div class="card-carousel layer layer-id-' + ongoingKeyCounter + '" id="layer-' + layer + '"' + slideFromAttr + '>' + template + '</div>';
@@ -304,6 +312,8 @@ $(".cards").on("click", "a", function(event){
     console.log(allKeys);
     layer++;
     if (layer ==  layers) {
+      console.log(layer, allKeys, slide, slideFrom, -1);
+
       openLayer(layer, allKeys, slide, slideFrom, -1);
     } else {
       layerGoToSlide(layer, slide);
