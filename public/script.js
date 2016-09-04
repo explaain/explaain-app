@@ -47,6 +47,9 @@ var importCardsByType = function(source, type, openFirstCard) {
        cards[key].key = cards[key]['@id'];
        cards[key].title = cards[key].name;
        cards[key].body = parseMarkdown(cards[key].description);
+       if (cards[key].moreDetail) {
+         cards[key].moreDetail = parseMarkdown(cards[key].moreDetail);
+       }
      }
      if (openFirstCard) {
        openLayer(0, [json[0]['@id']], 0, -1);
@@ -490,7 +493,7 @@ function updateCard(uri) {
     $('.card[data-uri="' + uri + '"]').find('h2').html(json.name);
     $('.card[data-uri="' + uri + '"]').find('.body-content').html(parseMarkdown(json.description));
     if (json.moreDetail) {
-      $('.card[data-uri="' + uri + '"]').find('.more-detail').html('<p class="label">More Detail</p>' + parseMarkdown(json.moreDetail));
+      $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
     }
   });
 }

@@ -257,7 +257,7 @@ h2 {
 
 
 
-body.desktop .body-content a:hover {
+body.desktop .body-content a:hover, body.desktop .more-detail a:hover {
   color: white;
   background: #ff6e73;
   border: 2px solid #ff6e73;
