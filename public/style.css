@@ -11,10 +11,6 @@ body.embed {
   background: none;
 }
 
-body.embed.overlay {
-  margin-top: 60px;
-}
-
 a:focus {
   outline: 0;
 }
@@ -46,6 +42,9 @@ body.embed .logo {
 .overlay-close-button {
   display: none;
   padding: 5px 10px;
+  margin: auto;
+  max-width: 3.5em;
+  text-align: center;
   color: #fff !important;
   font-family: sans-serif;
   float: right;
@@ -53,6 +52,11 @@ body.embed .logo {
   font-weight: bold;
   border-radius: 50px;
   border: 2px solid #fff;
+  background: #808080;
+}
+.overlay-close-button:hover {
+  color: #ff6e73;
+  border: 2px solid #ff6e73;
 }
 body.embed.overlay .overlay-close-button {
   display: block;
