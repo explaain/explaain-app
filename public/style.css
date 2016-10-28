@@ -42,12 +42,11 @@ body.embed .logo {
 .overlay-close-button {
   display: none;
   padding: 5px 10px;
-  margin: auto;
+  margin: 30px auto;
   max-width: 3.5em;
   text-align: center;
-  color: #fff !important;
+  color: #fff;
   font-family: sans-serif;
-  float: right;
   text-decoration: none;
   font-weight: bold;
   border-radius: 50px;
@@ -55,8 +54,8 @@ body.embed .logo {
   background: #808080;
 }
 .overlay-close-button:hover {
-  color: #ff6e73;
-  border: 2px solid #ff6e73;
+  color: #808080;
+  background: #fff;
 }
 body.embed.overlay .overlay-close-button {
   display: block;
