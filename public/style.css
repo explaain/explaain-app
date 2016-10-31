@@ -6,7 +6,7 @@ body {
 }
 
 body.embed {
-  margin: 10px;
+  margin: 0;
   padding: 0;
   background: none;
 }
@@ -70,6 +70,7 @@ body.embed.overlay .overlay-close-button {
 
 body.embed .cards {
   margin: 10px auto;
+  max-width: 500px;
 }
 
 .layer, .card, .card .card-visible, .card .card-spacer {
