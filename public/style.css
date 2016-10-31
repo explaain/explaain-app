@@ -70,7 +70,7 @@ body.embed.overlay .overlay-close-button {
 
 body.embed .cards {
   margin: 10px auto;
-  max-width: 500px;
+  max-width: 440px;
 }
 
 .layer, .card, .card .card-visible, .card .card-spacer {
