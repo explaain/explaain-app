@@ -33,6 +33,12 @@ app.get('/', function(request, response) {
   response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE });
 });
 
+app.get('/:type/:cardID', function(request, response) {
+  var touchscreen = getTouchscreen(request);
+
+  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, initialCardType: request.params.type , initialCardID: request.params.cardID });
+});
+
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
