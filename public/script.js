@@ -89,7 +89,7 @@ var importCardsBySearch = function(url) {
 var dataSource = getParameterByName('source') || defaultSource || 'http://api.explaain.com';
 var initialCardUrl = getParameterByName('cardUrl');
 var initialSearchUrl = getParameterByName('searchUrl');
-if (!initialCardUrl && typeof initialCardType !== 'undefined' && typeof initialCardID !== 'undefined') {
+if (!initialCardUrl && initialCardType && initialCardID) {
   initialCardUrl = dataSource + '/' + initialCardType + '/' + initialCardID;
 }
 if (initialCardUrl) {
