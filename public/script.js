@@ -15,7 +15,7 @@ if (touchscreen != true) {
 if (getParameterByName('frameId')) {
   frameId = getParameterByName('frameId');
 }
-if (getParameterByName('embed') == 'true') {
+if (getParameterByName('embed') == 'true' && getParameterByName('embedType') != 'overlay') {
 
   // Tell the page to resize the iframe after content has loaded into it
   window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
