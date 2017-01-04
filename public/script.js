@@ -183,7 +183,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
 };
 
 var openLayer = function(layer, keys, slide, slideFrom) {
-  $('.layer div.close').hide();
+  // $('.layer div.close').hide();
   $('.layer a').removeClass('active');
   var template = '';
   $.each(keys, function(i, key) {
@@ -236,7 +236,9 @@ var closeLayer = function(layer) {
   if(layers > 0) {
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('a').removeClass('active');
-    $('#layer-' + prevLayer).find('div.close').show();
+    if (prevLayer > 0) {
+      // $('#layer-' + prevLayer).find('div.close').show();
+    }
     focusLayer(prevLayer);
   } else {
     hideOverlay();

@@ -170,10 +170,21 @@ body.embed .card .card-visible {
   height: 27px;
   text-align: center;
   padding-top: 9px;
+  display: none;
 }
 
-.card .card-visible > div.close:active i {
+.card .card-visible > div.close:active i, .card .card-visible > div.close:hover i {
   color: #ff6e73;
+}
+
+.cards .card-carousel:nth-last-child(1) .card .card-visible > div.close {
+  display: block; /* Diplays only in last layer... */
+}
+.cards .card-carousel:nth-child(1) .card .card-visible > div.close {
+  display: none; /* ... but Never displays in first layer... */
+}
+body.overlay .cards .card-carousel:nth-last-child(1) .card .card-visible > div.close {
+  display: block; /* ... except in an overlay! */
 }
 
 .header-image {
