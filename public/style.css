@@ -161,16 +161,18 @@ body.embed .card .card-visible {
   height: 0;
 }
 
-.card .card-visible > i.close {
+.card .card-visible > div.close {
   z-index: 30;
   position: relative;
   float: right;
-  top: 6px;
   color: #bbb;
-  margin-right: 8px;
+  width: 36px;
+  height: 27px;
+  text-align: center;
+  padding-top: 9px;
 }
 
-.card .card-visible > i.close:active {
+.card .card-visible > div.close:active i {
   color: #ff6e73;
 }
 
@@ -266,15 +268,17 @@ body.desktop .body-content a:hover, body.desktop .more-detail a:hover {
   background: #ff6e73;
   border: 2px solid #ff6e73;
 }
-body.desktop .card .card-visible > i.close {
+body.desktop .card .card-visible > div.close {
   opacity: 0;
 }
-body.desktop .card .card-visible:hover > i.close {
+body.desktop .card .card-visible:hover > div.close {
   opacity: 1;
 }
-body.desktop .card .card-visible > i.close:hover {
-  color: #ff6e73;
+body.desktop .card .card-visible > div.close:hover {
   cursor: pointer;
+}
+body.desktop .card .card-visible > div.close:hover i {
+  color: #ff6e73;
 }
 body.desktop .card.faded .card-grey > div {
   cursor: pointer;
