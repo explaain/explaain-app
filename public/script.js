@@ -301,7 +301,8 @@ var scrollToCard = function(layer, slide) {
 $("html").on("click", function(event){
   if( !$(event.target).is(".cards") ) {
     if (getParameterByName('embedType') == 'overlay') {
-      window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
+      hideOverlay();
+      // window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
     }
   }
 });
@@ -320,7 +321,7 @@ $(".cards").on("click", "a", function(event){
       allKeys.push($(link).attr('href'));//.substring(1));
     });
     layer++;
-    if (layer ==  layers) {
+    if (layer == layers) {
       openLayer(layer, allKeys, slide, slideFrom, -1);
     } else {
       layerGoToSlide(layer, slide);
