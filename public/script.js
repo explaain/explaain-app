@@ -233,10 +233,14 @@ var closeLayer = function(layer) {
   $('#layer-' + layer).find('.card').addClass('removed');
   $('#layer-' + layer).fadeOut(500, function() { $(this).remove(); });
   layers--;
-  var prevLayer = layer - 1;
-  $('#layer-' + prevLayer).find('a').removeClass('active');
-  $('#layer-' + prevLayer).find('i.close').show();
-  focusLayer(prevLayer);
+  if(layers > 0) {
+    var prevLayer = layer - 1;
+    $('#layer-' + prevLayer).find('a').removeClass('active');
+    $('#layer-' + prevLayer).find('i.close').show();
+    focusLayer(prevLayer);
+  } else {
+    hideOverlay();
+  }
 }
 
 var closeAllLayers = function() {
