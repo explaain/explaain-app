@@ -15,7 +15,7 @@ if (touchscreen != true) {
 if (getParameterByName('frameId')) {
   frameId = getParameterByName('frameId');
 }
-if (getParameterByName('embed') == 'true') {
+if (getParameterByName('embed') == 'true' && getParameterByName('embedType') != 'overlay') {
 
   // Tell the page to resize the iframe after content has loaded into it
   window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
@@ -89,6 +89,9 @@ var importCardsBySearch = function(url) {
 var dataSource = getParameterByName('source') || defaultSource || 'http://api.explaain.com';
 var initialCardUrl = getParameterByName('cardUrl');
 var initialSearchUrl = getParameterByName('searchUrl');
+if (!initialCardUrl && initialCardType && initialCardID) {
+  initialCardUrl = dataSource + '/' + initialCardType + '/' + initialCardID;
+}
 if (initialCardUrl) {
   importCardByUrl(initialCardUrl);
 } else if (initialSearchUrl) {
@@ -96,17 +99,18 @@ if (initialCardUrl) {
 } else {
 
   if ( dataSource != 'googledoc' ) {
-    var importInitialCard = true;
-    if (getParameterByName('embedType') == 'overlay') {
-      importInitialCard = false;
+    var importInitialCard = false;
+    if (getParameterByName('embedType') != 'overlay') {
+      importInitialCard = true;
+      importCardsBySearch(dataSource + '/Person/search?name=may');
     }
-    console.log(importInitialCard);
-    importCardsByType(dataSource, 'Detail', false);
-    importCardsByType(dataSource, 'Event', false);
-    importCardsByType(dataSource, 'Headline', false);
-    importCardsByType(dataSource, 'Organization', false);
-    importCardsByType(dataSource, 'Person', importInitialCard);
-    importCardsByType(dataSource, 'Place', false);
+
+    // importCardsByType(dataSource, 'Detail', false);
+    // importCardsByType(dataSource, 'Event', false);
+    // importCardsByType(dataSource, 'Headline', false);
+    // importCardsByType(dataSource, 'Organization', false);
+    // importCardsByType(dataSource, 'Person', importInitialCard);
+    // importCardsByType(dataSource, 'Place', false);
 
   } else {
 
@@ -179,7 +183,6 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
 };
 
 var openLayer = function(layer, keys, slide, slideFrom) {
-  console.log(keys);
   $('.layer i.close').hide();
   $('.layer a').removeClass('active');
   var template = '';
@@ -188,8 +191,8 @@ var openLayer = function(layer, keys, slide, slideFrom) {
     if (!card) {
       card = {
         key: key,
-        title: 'Card not found!',
-        body: ''
+        title: '',
+        body: 'Loading...'
       };
       updateCard(key);
     }
@@ -312,11 +315,8 @@ $(".cards").on("click", "a", function(event){
     $.each($(this).closest('.body-content').find('a'), function(i, link) {
       allKeys.push($(link).attr('href'));//.substring(1));
     });
-    console.log(allKeys);
     layer++;
     if (layer ==  layers) {
-      console.log(layer, allKeys, slide, slideFrom, -1);
-
       openLayer(layer, allKeys, slide, slideFrom, -1);
     } else {
       layerGoToSlide(layer, slide);
@@ -340,10 +340,8 @@ $(".cards").on("click", ".card", function(){
       layerGoToSlide(layer, slide);
     }
   }
-  console.log(targetLayer, layers);
   if (targetLayer < layers - 1) {
     for (i = layers - 1; i > targetLayer; i--) {
-      console.log(targetLayer, layers);
       closeLayer(i);
     }
   }
@@ -351,7 +349,6 @@ $(".cards").on("click", ".card", function(){
 $(".cards").on("click", ".card .edit-button", function(){
   event.stopPropagation();
   var key = $(this).closest('.card').attr('data-uri');
-  console.log(key);
   window.parent.postMessage({action: 'edit', id: key}, "*");
 });
 
@@ -468,7 +465,6 @@ if (getParameterByName('editing') == 'true') {
 window.addEventListener('message', function(event) {
    switch (event.data.action) {
       case "open": //Does exactly the same as 'preview' but the card id variable is called 'key' not 'id'
-        console.log('open!!!');
         closeAllLayers();
         openLayer(0, [event.data.key], 0, 0);
         break;
@@ -487,15 +483,25 @@ function updateCard(uri) {
     if (json.moreDetail) {
       cards[uri].moreDetail = parseMarkdown(json.moreDetail);
     }
-    console.log(json);
-    $('.card[data-uri="' + uri + '"]').find('.header-image img').html(json.image);
-    $('.card[data-uri="' + uri + '"]').find('.header-image h3').html(json.name);
-    $('.card[data-uri="' + uri + '"]').find('h2').html(json.name);
-    $('.card[data-uri="' + uri + '"]').find('.body-content').html(parseMarkdown(json.description));
-    if (json.moreDetail) {
-      $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
+    updateCardDOM(uri, json);
+  }).fail(function() {
+    var failJson = {
+      image: '',
+      name: '',
+      description: 'Card not found',
     }
+    updateCardDOM(uri, failJson);
   });
+}
+
+function updateCardDOM(uri, json) {
+  $('.card[data-uri="' + uri + '"]').find('.header-image img').html(json.image);
+  $('.card[data-uri="' + uri + '"]').find('.header-image h3').html(json.name);
+  $('.card[data-uri="' + uri + '"]').find('h2').html(json.name);
+  $('.card[data-uri="' + uri + '"]').find('.body-content').html(parseMarkdown(json.description));
+  if (json.moreDetail) {
+    $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
+  }
 }
 
 
@@ -532,6 +538,5 @@ var insertMarkdownLinks = function(text, links) {
 
 
 var parseMarkdown = function(text) {
-  console.log(text);
   return markdown.toHTML(text);
 }

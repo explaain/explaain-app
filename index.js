@@ -30,7 +30,13 @@ var getTouchscreen = function(request) {
 app.get('/', function(request, response) {
   var touchscreen = getTouchscreen(request);
 
-  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE });
+  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, initialCardType: null , initialCardID: null });
+});
+
+app.get('/:type/:cardID', function(request, response) {
+  var touchscreen = getTouchscreen(request);
+
+  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, initialCardType: request.params.type , initialCardID: request.params.cardID });
 });
 
 
