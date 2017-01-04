@@ -502,6 +502,7 @@ function updateCardDOM(uri, json) {
   if (json.moreDetail) {
     $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
   }
+  $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
 }
 
 
