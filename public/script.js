@@ -157,7 +157,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +         '</h3>'
                 +       '</div>';
   } else {
-    template +=         '<i class="fa fa-times close" aria-hidden="true"></i>'
+    template +=         '<div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>'
                 +       '<h2>'
                 +         title
                 +       '</h2>'
@@ -183,7 +183,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
 };
 
 var openLayer = function(layer, keys, slide, slideFrom) {
-  $('.layer i.close').hide();
+  // $('.layer div.close').hide();
   $('.layer a').removeClass('active');
   var template = '';
   $.each(keys, function(i, key) {
@@ -236,7 +236,9 @@ var closeLayer = function(layer) {
   if(layers > 0) {
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('a').removeClass('active');
-    $('#layer-' + prevLayer).find('i.close').show();
+    if (prevLayer > 0) {
+      // $('#layer-' + prevLayer).find('div.close').show();
+    }
     focusLayer(prevLayer);
   } else {
     hideOverlay();
@@ -328,7 +330,7 @@ $(".cards").on("click", "a", function(event){
     }
   }
 });
-$(".cards").on("click", "i.close", function(){
+$(".cards").on("click", "div.close", function(){
   event.stopPropagation();
   // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
@@ -338,7 +340,7 @@ $(".cards").on("click", ".card", function(){
   event.stopPropagation();
   var layer = getLayerNumber($(this));
   var targetLayer = layer + 1;
-  if(!$(event.target).is("a") && !$(event.target).is("i.close") && !$(event.target).is(".edit-button") && !$(event.target).is(".edit-button i") ) {
+  if(!$(event.target).is("a") && !$(event.target).is("div.close") && !$(event.target).is(".edit-button") && !$(event.target).is(".edit-button i") ) {
     targetLayer--;
     if (layer == layers-1) {
       var slide = $(this).closest('.card').index();
