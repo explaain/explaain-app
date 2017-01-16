@@ -58,13 +58,14 @@ app.get('/cards/:id', function(req, res) {
     if (!entity)
       return res.status(404).json({ error: "Card ID not valid" });
 
-    var card = serialize.toJSON(entity)
-
+    var cardID = entity._id;
+    var card = serialize.toJSON(entity);
+    
     if (req.xhr) {
       return res.json( card );
     } else {
       var touchscreen = getTouchscreen(req);
-      return res.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, card: card, initialCardType: card['@type'] , initialCardID: entity._id });
+      return res.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, card: card, initialCardType: card['@type'] , initialCardID: cardID });
     }
   });
 
