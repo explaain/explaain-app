@@ -64,7 +64,7 @@ app.get('/cards/:id', function(req, res) {
       return res.json( card );
     } else {
       var touchscreen = getTouchscreen(req);
-      return res.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, card: card, initialCardType: card['@type'] , initialCardID: card['@id'] });
+      return res.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, card: card, initialCardType: card['@type'] , initialCardID: entity._id });
     }
   });
 
