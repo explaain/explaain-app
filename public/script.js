@@ -18,11 +18,11 @@ if (getParameterByName('frameId')) {
 if (getParameterByName('embed') == 'true' && getParameterByName('embedType') != 'overlay') {
 
   // Tell the page to resize the iframe after content has loaded into it
-  window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
+  updateFrameSize();
 
   // Tell the page to resize the iframe if the page has been reized
   $(window).resize(function() {
-    window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
+    updateFrameSize();
   });
 }
 
@@ -226,6 +226,9 @@ var openLayer = function(layer, keys, slide, slideFrom) {
   ongoingKeyCounter++;
 
   $('.card').removeClass('opening');
+  setTimeout(function() { //This makes sure the iframe resizes after th 0.5s transition in the CSS
+    updateFrameSize();
+  }, 600)
   focusLayer(layer);
 }
 
@@ -477,6 +480,11 @@ window.addEventListener('message', function(event) {
         break;
       }
  }, false);
+
+
+function updateFrameSize() {
+  window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
+}
 
 
 function updateCard(uri) {
