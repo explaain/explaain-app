@@ -48,7 +48,7 @@ app.get('/cards/:id', function(req, res) {
       return res.redirect("/")
     }
   }
-  
+
   // Is JSON request then get card directly form the database
   mongoose.connection.db
   .collection('entities')
@@ -60,7 +60,7 @@ app.get('/cards/:id', function(req, res) {
 
     var cardID = entity._id;
     var card = serialize.toJSON(entity);
-    
+
     if (req.xhr) {
       return res.json( card );
     } else {
