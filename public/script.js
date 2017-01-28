@@ -429,11 +429,7 @@ if (state.editing) {
   window.addEventListener('message', function(event) {
        switch (event.data.action) {
           case "update":
-            updateCard(event.data.id);
-            break;
-          case "preview": // Should replace this with just using "open" below
-            closeAllLayers(false);
-            openLayer(0, [event.data.id], 0, 0);
+            updateCard(event.data.key);
             break;
           }
      }, false);
@@ -444,9 +440,6 @@ window.addEventListener('message', function(event) {
       case "open": //Does exactly the same as 'preview' but the card id variable is called 'key' not 'id'
         closeAllLayers(false);
         openLayer(0, [event.data.key], 0, 0);
-        break;
-      case "update":
-        updateCard(event.data.key);
         break;
       }
  }, false);

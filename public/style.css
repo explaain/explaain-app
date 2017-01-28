@@ -1,6 +1,6 @@
 body {
   padding: 20px 0 0 0;
-  background: #ddd;
+  background: none;
   font-family: Lato;
   color: #333;
 }
@@ -8,7 +8,10 @@ body {
 body.embed {
   margin: 0;
   padding: 0;
-  background: none;
+}
+
+body.app {
+  background: #ddd;
 }
 
 a:focus {
@@ -16,8 +19,8 @@ a:focus {
 }
 
 .logo {
+  display: none;
   text-align: center;
-  background: #ddd;
   position: fixed;
   z-index: 100000;
   text-align: center;
@@ -34,8 +37,8 @@ a:focus {
   margin: 0;
 }
 
-body.embed .logo {
-  display: none;
+body.app .logo {
+  display: block;
 }
 
 
@@ -87,11 +90,6 @@ body.embed .cards {
   padding: 0 5px;
 }
 
-body.embed .card .card-visible {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-}
-
 .card.standalone {
   margin: 20px 15px 10px 15px;
 }
@@ -107,13 +105,9 @@ body.embed .card .card-visible {
 }
 
 .card .card-visible {
-  /*position: absolute;*/
-  /*transform: scale(1,1);*/
-  /*width: 100%;*/
-  /*margin: 0 5px;*/
-  /*max-width: 340px;*/
   min-height: 120px;
-  border-radius: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
   overflow: hidden;
   opacity: 1;
   background: white;
