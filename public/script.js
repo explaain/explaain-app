@@ -1,22 +1,30 @@
+var state = {};
+
 var cards = {}; // object with key ids
 var cardLists = []; cardLists[0] = [];
 var focusPosition = [];
 var tempCards;
 var waitingForDoctop = true;
 var ongoingKeyCounter = 0;
-var layers = 0;
+state.layers = 0;
 var temp;
-var frameId;
 
 
 if (touchscreen != true) {
   $('body').addClass('desktop');
 }
-if (getParameterByName('frameId')) {
-  frameId = getParameterByName('frameId');
-}
-if (getParameterByName('embed') == 'true') {
+state.frameId = getParameterByName('frameId');
+state.embed = getParameterByName('embed') == "true";
+state.embedType = getParameterByName('embedType');
+state.source = getParameterByName('source');
+state.cardUrl = getParameterByName('cardUrl');
+state.searchUrl = getParameterByName('searchUrl');
+state.embedLinkRoute = getParameterByName('embedLinkRoute') == "true";
+state.editing = getParameterByName('editing') == "true";
 
+
+
+if (state.embed) {
   // Tell the page to resize the iframe after content has loaded into it
   updateFrameSize();
 
@@ -27,118 +35,88 @@ if (getParameterByName('embed') == 'true') {
 }
 
 var hideOverlay = function() {
-  closeAllLayers();
-  if (getParameterByName('embedType') == 'overlay') {
-    window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
+  if (state.embedType == 'overlay') {
+    closeAllLayers(false);
+    window.parent.postMessage({ frameId: state.frameId, action: 'explaain-hide-overlay' }, "*");
   }
 }
 
-
-
-var importCardsByType = function(source, type, openFirstCard) {
-  source = source.replace(/\/$/, "");
-  $.ajax({
-     url: source + '/' + type + "/search"
-   }).done(function(json) {
-    //  cards = json;
-     for (var i in json) {
-       var key = json[i]['@id'];
-       cards[key] = json[i];
-       cards[key].key = cards[key]['@id'];
-       cards[key].title = cards[key].name;
-       cards[key].body = parseMarkdown(cards[key].description);
-       if (cards[key].moreDetail) {
-         cards[key].moreDetail = parseMarkdown(cards[key].moreDetail);
-       }
-     }
-     if (openFirstCard) {
-       openLayer(0, [json[0]['@id']], 0, -1);
-     }
-   });
+var publishCard = function(json) {
+  var key = json['@id'];
+  json.key = key;
+  json.title = json.name;
+  json.body = parseMarkdown(json.description);
+  if (json.moreDetail) {
+    json.moreDetail = parseMarkdown(json.moreDetail);
+  }
+  cards[key] = json;
 }
 
-var importCardByUrl= function(url) {
+var importCards = function(url) { //Always returns an array
+  var deferred = Q.defer();
   $.ajax({
      url: url
-   }).done(function(json) {
-     var key = json['@id'];
-     cards[key] = json;
-     cards[key].key = cards[key]['@id'];
-     cards[key].title = cards[key].name;
-     cards[key].body = parseMarkdown(cards[key].description);
-     openLayer(0, [json['@id']], 0, -1);
-   });
-}
-
-var importCardsBySearch = function(url) {
-  $.ajax({
-     url: url
-   }).done(function(json) {
-    //  cards = json;
-     for (var i in json) {
-       var key = json[i]['@id'];
-       cards[key] = json[i];
-       cards[key].key = cards[key]['@id'];
-       cards[key].title = cards[key].name;
-       cards[key].body = parseMarkdown(cards[key].description);
-     }
-     openLayer(0, [json[0]['@id']], 0, -1);
-   });
-}
-
-var dataSource = getParameterByName('source') || defaultSource || 'http://api.explaain.com';
-var initialCardUrl = getParameterByName('cardUrl');
-var initialSearchUrl = getParameterByName('searchUrl');
-if (!initialCardUrl && initialCardType && initialCardID) {
-  initialCardUrl = dataSource + '/' + initialCardType + '/' + initialCardID;
-}
-if (initialCardUrl) {
-  importCardByUrl(initialCardUrl);
-} else if (initialSearchUrl) {
-  importCardsBySearch(initialSearchUrl);
-} else {
-
-  if ( dataSource != 'googledoc' ) {
-    var importInitialCard = false;
-    if (getParameterByName('embedType') != 'overlay') {
-      importInitialCard = true;
-      importCardsBySearch(dataSource + '/Person/search?name=may');
+  }).done(function(json) {
+    if (!Array.isArray(json)) { //If not already an array, then converts into an array of one item
+      json = [json];
     }
-
-    // importCardsByType(dataSource, 'Detail', false);
-    // importCardsByType(dataSource, 'Event', false);
-    // importCardsByType(dataSource, 'Headline', false);
-    // importCardsByType(dataSource, 'Organization', false);
-    // importCardsByType(dataSource, 'Person', importInitialCard);
-    // importCardsByType(dataSource, 'Place', false);
-
-  } else {
-
-    $.doctop({
-      url: '//docs.google.com/document/d/1L_yGS9DQeCCY49MIVVpuB4Vaiz6o7P3BnEbcYqox10A/pub',
-      archieml: true,
-      callback: function(d){
-        if (waitingForDoctop) {
-          waitingForDoctop = false;
-          console.dir(d);
-          tempCards = d.copy.archie.cards;
-          for (i=0; i<tempCards.length; i++) {
-            if (tempCards[i].id != "") {
-              cards[tempCards[i].id] = tempCards[i];
-            }
-          }
-          openLayer(0, [0], 0, -1);
-        }
-      }
-    });
-
-    window.setTimeout(function() {
-      // if (waitingForDoctop) {
-        waitingForDoctop = false;
-        console.log('Doctop not loaded - using backup data...');
-    }, 300);
-  }
+    for (var i in json) {
+      publishCard(json[i]);
+    }
+    deferred.resolve(json);
+  }).fail(function(){
+    deferred.resolve([]);
+  });
+  return deferred.promise;
 }
+
+
+var importCardsByType = function(source, type) { //Quite possibly no longer needed
+  source = source.replace(/\/$/, "");
+  var url = source + '/' + type + "/search";
+  importCards(url);
+}
+
+
+
+function updateCard(uri) {
+  importCards(uri)
+  .then(function(json) {
+    updateCardDOM(uri, json[0]);
+  });
+}
+
+function updateCardDOM(uri, json) {
+  if (!json) {
+    json = {
+      title: '',
+      body: 'Card not found',
+    }
+  }
+  $('.card[data-uri="' + uri + '"]').find('h2').html(json.title);
+  $('.card[data-uri="' + uri + '"]').find('.body-content').html(json.body);
+  if (json.moreDetail) {
+    $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
+  }
+  $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
+}
+
+
+
+var dataSource = state.source || defaultSource || 'http://api.explaain.com';
+var initialUrl = state.cardUrl || state.searchUrl; // Do we still need this?? || dataSource + '/' + initialCardType + '/' + initialCardID;
+
+if (!initialUrl && state.embedType != 'overlay') {
+  initialUrl = dataSource + '/Person/search?name=may';
+}
+
+if (initialUrl) {
+  importCards(initialUrl)
+  .then(function(json) {
+    openLayer(0, [json[0]['@id']], 0, -1);
+  });
+}
+
 
 
 var cardTemplate = function (key, title, body, moreDetail, image, topic, showHeaderImage, standalone) {
@@ -182,8 +160,8 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
   return template;
 };
 
+
 var openLayer = function(layer, keys, slide, slideFrom) {
-  // $('.layer div.close').hide();
   $('.layer a').removeClass('active');
   var template = '';
   $.each(keys, function(i, key) {
@@ -201,15 +179,8 @@ var openLayer = function(layer, keys, slide, slideFrom) {
   var slideFromAttr = slideFrom!=-1 ? 'slide-from="' + slideFrom + '"' : '';
   template = '<div class="card-carousel layer layer-id-' + ongoingKeyCounter + '" id="layer-' + layer + '"' + slideFromAttr + '>' + template + '</div>';
 
-  // template = '<div class="card-carousel">'
-  //     + '<div style="background:blue; height: auto; width: 300px;">Hello</div>'
-  //     + '<div style="background:blue; height: auto; width: 300px;">Hello<br>Hello</div>'
-  //     + '<div style="background:blue; height: auto; width: 300px;">Hello</div>'
-  //     + '</div>';
-
   cardDOM = $(template).appendTo('.cards');
 
-  // $('#' + (ongoingKeyCounter-1)).slick('unslick');
   $('.layer-id-' + ongoingKeyCounter).slick({
     dots: false,
     infinite: false,
@@ -221,8 +192,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
     initialSlide: slide
   });
 
-
-  layers++;
+  state.layers++;
   ongoingKeyCounter++;
 
   $('.card').removeClass('opening');
@@ -232,25 +202,25 @@ var openLayer = function(layer, keys, slide, slideFrom) {
   focusLayer(layer);
 }
 
-var closeLayer = function(layer) {
+var closeLayer = function(layer, allowHideOverlay) {
   $('#layer-' + layer).find('.card').addClass('removed');
   $('#layer-' + layer).fadeOut(500, function() { $(this).remove(); });
-  layers--;
-  if(layers > 0) {
+  state.layers--;
+  if(state.layers > 0) {
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('a').removeClass('active');
     if (prevLayer > 0) {
       // $('#layer-' + prevLayer).find('div.close').show();
     }
     focusLayer(prevLayer);
-  } else {
-    hideOverlay();
+  } else if (allowHideOverlay) {
+      hideOverlay();
   }
 }
 
-var closeAllLayers = function() {
-  for (i=layers-1; i>=0; i--) {
-    closeLayer(i);
+var closeAllLayers = function(thenHideOverlay) {
+    for (i=state.layers-1; i>=0; i--) {
+    closeLayer(i, thenHideOverlay);
   }
 }
 
@@ -290,7 +260,7 @@ var getLayerCurrentCard = function(layer) {
   return slide;
 }
 
-var scrollToCard = function(layer, slide) {
+var scrollToCard = function(layer, slide) { //Not sure whether this is working?
   if (layer > 0) {
     var slideN = parseInt(slide) + 1;
     var cardDOM = $('#layer-' + layer).find('.card:nth-child(' + slideN + ')');
@@ -305,17 +275,14 @@ var scrollToCard = function(layer, slide) {
 //UI Interaction
 $("html").on("click", function(event){
   if( !$(event.target).is(".cards") ) {
-    if (getParameterByName('embedType') == 'overlay') {
-      hideOverlay();
-      // window.parent.postMessage({ frameId: frameId, action: 'explaain-hide-overlay' }, "*");
-    }
+    hideOverlay();
   }
 });
 $(".cards").on("click", "a", function(event){
   event.preventDefault();
   event.stopPropagation();
-  if (getParameterByName('embedLinkRoute') == 'true') {
-    window.parent.postMessage({ frameId: frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
+  if (state.embedLinkRoute) {
+    window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
   } else {
     var slide = $(this).index();
     var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
@@ -326,7 +293,7 @@ $(".cards").on("click", "a", function(event){
       allKeys.push($(link).attr('href'));//.substring(1));
     });
     layer++;
-    if (layer == layers) {
+    if (layer == state.layers) {
       openLayer(layer, allKeys, slide, slideFrom, -1);
     } else {
       layerGoToSlide(layer, slide);
@@ -337,7 +304,7 @@ $(".cards").on("click", "div.close", function(){
   event.stopPropagation();
   // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
-  closeLayer(layer);
+  closeLayer(layer, true);
 });
 $(".cards").on("click", ".card", function(){
   event.stopPropagation();
@@ -345,14 +312,14 @@ $(".cards").on("click", ".card", function(){
   var targetLayer = layer + 1;
   if(!$(event.target).is("a") && !$(event.target).is("div.close") && !$(event.target).is(".edit-button") && !$(event.target).is(".edit-button i") ) {
     targetLayer--;
-    if (layer == layers-1) {
+    if (layer == state.layers-1) {
       var slide = $(this).closest('.card').index();
       layerGoToSlide(layer, slide);
     }
   }
-  if (targetLayer < layers - 1) {
-    for (i = layers - 1; i > targetLayer; i--) {
-      closeLayer(i);
+  if (targetLayer < state.layers - 1) {
+    for (i = state.layers - 1; i > targetLayer; i--) {
+      closeLayer(i, true);
     }
   }
 });
@@ -457,15 +424,15 @@ $( window ).resize(function() {
 });
 
 
-if (getParameterByName('editing') == 'true') {
+if (state.editing) {
   addStyleString('.card:hover .edit-button { display: block; }');
   window.addEventListener('message', function(event) {
        switch (event.data.action) {
           case "update":
             updateCard(event.data.id);
             break;
-          case "preview":
-            closeAllLayers();
+          case "preview": // Should replace this with just using "open" below
+                        closeAllLayers(false);
             openLayer(0, [event.data.id], 0, 0);
             break;
           }
@@ -475,7 +442,7 @@ if (getParameterByName('editing') == 'true') {
 window.addEventListener('message', function(event) {
    switch (event.data.action) {
       case "open": //Does exactly the same as 'preview' but the card id variable is called 'key' not 'id'
-        closeAllLayers();
+                closeAllLayers(false);
         openLayer(0, [event.data.key], 0, 0);
         break;
       }
@@ -483,45 +450,12 @@ window.addEventListener('message', function(event) {
 
 
 function updateFrameSize() {
-  console.log($('body').outerHeight());
-  if (getParameterByName('embed') == 'true' && getParameterByName('embedType') != 'overlay') { // Probably need to make this work for overlays too
-    window.parent.postMessage({ frameId: frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
+  if (state.embed && state.embedType != 'overlay') { // Probably need to make this work for overlays too
+    window.parent.postMessage({ frameId: state.frameId, action: 'explaain-resize', height: $('body').outerHeight(), width: $('body').outerWidth() }, "*");
   }
 }
 
 
-function updateCard(uri) {
-  $.ajax({
-    url: uri
-  }).done(function(json) {
-    cards[uri] = json;
-    cards[uri].key = json['@id'];
-    cards[uri].title = json.name;
-    cards[uri].body = parseMarkdown(json.description);
-    if (json.moreDetail) {
-      cards[uri].moreDetail = parseMarkdown(json.moreDetail);
-    }
-    updateCardDOM(uri, json);
-  }).fail(function() {
-    var failJson = {
-      image: '',
-      name: '',
-      description: 'Card not found',
-    }
-    updateCardDOM(uri, failJson);
-  });
-}
-
-function updateCardDOM(uri, json) {
-  $('.card[data-uri="' + uri + '"]').find('.header-image img').html(json.image);
-  $('.card[data-uri="' + uri + '"]').find('.header-image h3').html(json.name);
-  $('.card[data-uri="' + uri + '"]').find('h2').html(json.name);
-  $('.card[data-uri="' + uri + '"]').find('.body-content').html(parseMarkdown(json.description));
-  if (json.moreDetail) {
-    $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
-  }
-  $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
-}
 
 
 
@@ -540,19 +474,6 @@ function addStyleString(str) {
     var node = document.createElement('style');
     node.innerHTML = str;
     document.body.appendChild(node);
-}
-
-//This is probably now unnecessary
-var insertMarkdownLinks = function(text, links) {
-  var i = 0;
-  text = text.replace(/\[(.+?)\]/g, function($1) {
-    var linkText = $1.replace(/[\[\]]/g, '');
-    var href = (links && links[i]) ? links[i] : '';
-    var link = '<a href="#'+href+'">'+linkText+'</a>';
-    i++;
-    return link;
-  });
-  return text;
 }
 
 
