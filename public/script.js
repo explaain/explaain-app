@@ -52,7 +52,8 @@ var publishCard = function(json) {
   cards[key] = json;
 }
 
-var importCards = function(url) { //Always returns an array
+var importCards = function(key) { //Always returns an array
+  var url = getDataUrl(key);
   var deferred = Q.defer();
   $.ajax({
      url: url
@@ -68,6 +69,15 @@ var importCards = function(url) { //Always returns an array
     deferred.resolve([]);
   });
   return deferred.promise;
+}
+
+var getDataUrl = function(key) {
+  var url = key;
+  url = url.replace('app.explaain.com', 'api.explaain.com')
+  url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com')
+  url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource)
+  url = url.replace('/cards/', '/Detail/');
+  return url;
 }
 
 
@@ -103,11 +113,11 @@ function updateCardDOM(uri, json) {
 
 
 
-var dataSource = state.source || defaultSource || 'http://api.explaain.com';
-var initialUrl = state.cardUrl || state.searchUrl; // Do we still need this?? || dataSource + '/' + initialCardType + '/' + initialCardID;
+var defaultSource = state.source || defaultSource || 'http://api.explaain.com'; //This now seems only to be used for the initial card
+var initialUrl = state.cardUrl || state.searchUrl; // Not sure whether we still need the following: || defaultSource + '/' + initialCardType + '/' + initialCardID;
 
 if (!initialUrl && state.embedType != 'overlay') {
-  initialUrl = dataSource + '/Person/search?name=may';
+  initialUrl = defaultSource + '/Person/search?name=may';
 }
 
 if (initialUrl) {
