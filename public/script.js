@@ -163,7 +163,8 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +         '</p>'
                 +       '</div>'
   };
-  template +=         '</div>'
+  template +=           '<a href="http://explaain.com" target="_blank"><div class="card-icon"><img src="card-logo.png"></div></a>'
+                +     '</div>'
                 +     '<button class="edit-button"><i class="fa fa-pencil" aria-hidden="true"></i></button>'
                 // +     '<div class="card-spacer"></div>'
                 +   '</div>';
@@ -290,24 +291,26 @@ $("html").on("click", function(event){
   }
 });
 $(".cards").on("click", "a", function(event){
-  event.preventDefault();
-  event.stopPropagation();
-  if (state.embedLinkRoute) {
-    window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
-  } else {
-    var slide = $(this).index();
-    var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
-    temp = $(this).closest('.layer > div');
-    var layer = getLayerNumber($(this));
-    var allKeys = [];
-    $.each($(this).closest('.body-content').find('a'), function(i, link) {
-      allKeys.push($(link).attr('href'));//.substring(1));
-    });
-    layer++;
-    if (layer == state.layers) {
-      openLayer(layer, allKeys, slide, slideFrom, -1);
+  if ($(this).attr('href') != "http://explaain.com") { //Probably need a better way of doing this!
+    event.preventDefault();
+    event.stopPropagation();
+    if (state.embedLinkRoute) {
+      window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
     } else {
-      layerGoToSlide(layer, slide);
+      var slide = $(this).index();
+      var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
+      temp = $(this).closest('.layer > div');
+      var layer = getLayerNumber($(this));
+      var allKeys = [];
+      $.each($(this).closest('.body-content').find('a'), function(i, link) {
+        allKeys.push($(link).attr('href'));//.substring(1));
+      });
+      layer++;
+      if (layer == state.layers) {
+        openLayer(layer, allKeys, slide, slideFrom, -1);
+      } else {
+        layerGoToSlide(layer, slide);
+      }
     }
   }
 });
