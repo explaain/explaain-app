@@ -20,6 +20,7 @@ a:focus {
 
 .logo {
   display: none;
+  background: #ddd;
   text-align: center;
   position: fixed;
   z-index: 100000;
@@ -204,6 +205,7 @@ body.overlay .cards .card-carousel:nth-last-child(1) .card .card-visible > div.c
 
 h2 {
   padding: 0 20px;
+  margin-top: 22px;
   font-size: 20px;
 }
 
@@ -232,6 +234,36 @@ h2 {
   font-weight: 600;
   text-transform: uppercase;
   color: #888;
+}
+
+
+.card .card-icon {
+  float: right;
+  height: 30px;
+  width: 26px;
+  margin-top: -20px;
+  margin-bottom: 5px;
+  margin-right: 9px;
+  overflow: hidden;
+  transition: width 0.5s;
+}
+.card .card-icon:hover {
+  width: 104px;
+}
+.card .card-icon img {
+  height: 30px;
+  opacity: 0;
+  -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+  filter: grayscale(100%);
+  transition: opacity 0.5s;
+}
+.cards .layer:last-child .card .card-icon img {
+  opacity: 0.6;
+}
+.cards .layer:last-child .card .card-icon:hover img {
+  opacity: 1;
+  -webkit-filter: grayscale(0%); /* Safari 6.0 - 9.0 */
+  filter: grayscale(0%);
 }
 
 .card .edit-button {
