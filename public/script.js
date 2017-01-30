@@ -52,8 +52,8 @@ var publishCard = function(json) {
   cards[key] = json;
 }
 
-var importCards = function(key) { //Always returns an array
-  var url = getDataUrl(key);
+var importCards = function(url) { //Always returns an array
+  url = getDataUrl(url); //Possibly unnecessary as it already happens in openLayer()
   var deferred = Q.defer();
   $.ajax({
      url: url
@@ -175,6 +175,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
   $('.layer a').removeClass('active');
   var template = '';
   $.each(keys, function(i, key) {
+    key = getDataUrl(key); //Should we maybe call this "url" from here onwards?
     var card = cards[key];
     if (!card) {
       card = {
