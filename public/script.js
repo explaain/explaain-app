@@ -13,6 +13,7 @@ var temp;
 if (touchscreen != true) {
   $('body').addClass('desktop');
 }
+state.frameParent = getParameterByName('frameParent');
 state.frameId = getParameterByName('frameId');
 state.embed = getParameterByName('embed') == "true";
 state.embedType = getParameterByName('embedType');
