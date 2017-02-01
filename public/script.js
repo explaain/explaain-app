@@ -164,7 +164,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +         '</p>'
                 +       '</div>'
   };
-  template +=           '<a href="http://explaain.com" target="_blank"><div class="card-icon"><img src="card-logo.png"></div></a>'
+  template +=           '<a href="http://explaain.com" target="_blank"><div class="card-icon"><img src="/card-logo.png"></div></a>'
                 +     '</div>'
                 +     '<button class="edit-button"><i class="fa fa-pencil" aria-hidden="true"></i></button>'
                 // +     '<div class="card-spacer"></div>'
