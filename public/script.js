@@ -159,16 +159,16 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +         '<p>'
                 +           body.replace(/\s/g,' ')
                 +         '</p>'
-                +       '</div>';
-  if (moreDetail) {
-    template +=         '<div class="more-detail">'
-                +         '<p class="label">More Detail</p>'
-                +         '<p>'
-                +           moreDetail.replace(/\s/g,' ')
-                +         '</p>'
                 +       '</div>'
+                +       '<div class="more-detail">';
+  if (moreDetail) {
+  template +=             '<p class="label">More Detail</p>'
+                +         '<p>'
+                 moreDetail.replace(/\s/g,' ');
+                +         '</p>';
   };
-  template +=           '<a href="http://explaain.com" target="_blank"><div class="card-icon"><img src="/card-logo.png"></div></a>'
+  template +=           '</div>'
+                +       '<a href="http://explaain.com" target="_blank"><div class="card-icon"><img src="/card-logo.png"></div></a>'
                 +     '</div>'
                 +     '<button class="edit-button"><i class="fa fa-pencil" aria-hidden="true"></i></button>'
                 // +     '<div class="card-spacer"></div>'
