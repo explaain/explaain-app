@@ -500,5 +500,5 @@ var parseMarkdown = function(text) {
 function urlDomain(data) {
   var    a      = document.createElement('a');
          a.href = data;
-  return a.hostname;
+  return data ? a.hostname : null;
 }
