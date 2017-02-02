@@ -14,6 +14,7 @@ if (touchscreen != true) {
   $('body').addClass('desktop');
 }
 state.frameParent = getParameterByName('frameParent') || null;
+state.frameParentRoot = urlDomain(state.frameParent)
 state.frameId = getParameterByName('frameId');
 state.embed = getParameterByName('embed') == "true";
 state.embedType = getParameterByName('embedType');
@@ -22,7 +23,6 @@ state.cardUrl = getParameterByName('cardUrl');
 state.searchUrl = getParameterByName('searchUrl');
 state.embedLinkRoute = getParameterByName('embedLinkRoute') == "true";
 state.editing = getParameterByName('editing') == "true";
-
 
 
 if (state.embed) {
@@ -494,4 +494,11 @@ function addStyleString(str) {
 
 var parseMarkdown = function(text) {
   return markdown.toHTML(text);
+}
+
+
+function urlDomain(data) {
+  var    a      = document.createElement('a');
+         a.href = data;
+  return a.hostname;
 }
