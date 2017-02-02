@@ -117,6 +117,10 @@ function updateCardDOM(uri, json) {
 var defaultSource = state.source || defaultSource || 'http://api.explaain.com'; //This now seems only to be used for the initial card
 var initialUrl = state.cardUrl || state.searchUrl; // Not sure whether we still need the following: || defaultSource + '/' + initialCardType + '/' + initialCardID;
 
+if (initialCardType && initialCardID) {
+  initialUrl = defaultSource + '/' + initialCardType + '/' + initialCardID;
+}
+
 if (!initialUrl && state.embedType != 'overlay') {
   initialUrl = defaultSource + '/Person/search?name=may';
 }
@@ -156,7 +160,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +           body.replace(/\s/g,' ')
                 +         '</p>'
                 +       '</div>';
-  if (moreDetail) {
+  if (moreDetail) {console.log(moreDetail);
     template +=         '<div class="more-detail">'
                 +         '<p class="label">More Detail</p>'
                 +         '<p>'
