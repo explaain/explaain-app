@@ -209,6 +209,9 @@ h2 {
   font-size: 20px;
 }
 
+.body-content {
+  min-height: 80px;
+}
 .body-content, .more-detail {
   padding: 0 20px;
   line-height: 1.9;
