@@ -40,36 +40,36 @@ app.get('/', function(request, response) {
   response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, initialCardType: null , initialCardID: null });
 });
 
-app.get('/cards/:id', function(req, res) {
-  if (req.params.id === null) {
-    if (req.xhr) {
-      return res.status(400).json({ error: "Card ID required" });
-    } else {
-      return res.redirect("/")
-    }
-  }
-
-  // Is JSON request then get card directly form the database
-  mongoose.connection.db
-  .collection('entities')
-  .findOne({_id: mongoose.Types.ObjectId(req.params.id)}, function(err, entity) {
-    if (err) return res.status(500).json({ error: "Unable to fetch card" });
-
-    if (!entity)
-      return res.status(404).json({ error: "Card ID not valid" });
-
-    var cardID = entity._id;
-    var card = serialize.toJSON(entity);
-
-    if (req.xhr) {
-      return res.json( card );
-    } else {
-      var touchscreen = getTouchscreen(req);
-      return res.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, card: card, initialCardType: card['@type'] , initialCardID: cardID });
-    }
-  });
-
-});
+// app.get('/cards/:id', function(req, res) {
+//   if (req.params.id === null) {
+//     if (req.xhr) {
+//       return res.status(400).json({ error: "Card ID required" });
+//     } else {
+//       return res.redirect("/")
+//     }
+//   }
+//
+//   // Is JSON request then get card directly form the database
+//   mongoose.connection.db
+//   .collection('entities')
+//   .findOne({_id: mongoose.Types.ObjectId(req.params.id)}, function(err, entity) {
+//     if (err) return res.status(500).json({ error: "Unable to fetch card" });
+//
+//     if (!entity)
+//       return res.status(404).json({ error: "Card ID not valid" });
+//
+//     var cardID = entity._id;
+//     var card = serialize.toJSON(entity);
+//
+//     if (req.xhr) {
+//       return res.json( card );
+//     } else {
+//       var touchscreen = getTouchscreen(req);
+//       return res.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, card: card, initialCardType: card['@type'] , initialCardID: cardID });
+//     }
+//   });
+//
+// });
 
 app.get('/:type/:cardID', function(request, response) {
   var touchscreen = getTouchscreen(request);
