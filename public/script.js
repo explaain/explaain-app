@@ -160,7 +160,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +           body.replace(/\s/g,' ')
                 +         '</p>'
                 +       '</div>';
-  if (moreDetail) {console.log(moreDetail);
+  if (moreDetail) {
     template +=         '<div class="more-detail">'
                 +         '<p class="label">More Detail</p>'
                 +         '<p>'
