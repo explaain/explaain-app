@@ -13,6 +13,7 @@ var temp;
 if (touchscreen != true) {
   $('body').addClass('desktop');
 }
+state.controlGroup = getParameterByName('controlGroup') || false;
 state.frameParent = getParameterByName('frameParent') || null;
 state.frameParentRoot = urlDomain(state.frameParent)
 state.frameId = getParameterByName('frameId');
