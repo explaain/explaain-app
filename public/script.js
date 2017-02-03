@@ -75,10 +75,15 @@ var importCards = function(url) { //Always returns an array
 
 var getDataUrl = function(key) {
   var url = key;
-  url = url.replace('app.explaain.com', 'api.explaain.com')
-  url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com')
-  url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource)
+  url = url.replace('app.explaain.com', 'api.explaain.com');
+  url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com');
+  url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource);
   url = url.replace('/cards/', '/Detail/');
+  if (window.location.protocol == 'https:') {
+    url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com/');
+    url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com/');
+
+  }
   return url;
 }
 
