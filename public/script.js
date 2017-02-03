@@ -13,6 +13,7 @@ var temp;
 if (touchscreen != true) {
   $('body').addClass('desktop');
 }
+state.controlGroup = getParameterByName('controlGroup') || false;
 state.frameParent = getParameterByName('frameParent') || null;
 state.frameParentRoot = urlDomain(state.frameParent)
 state.frameId = getParameterByName('frameId');
@@ -313,6 +314,8 @@ $(".cards").on("click", "a", function(event){
       layer++;
       if (layer == state.layers) {
         openLayer(layer, allKeys, slide, slideFrom, -1);
+      } else if (slide == $('#layer-' + layer).slick('slickCurrentSlide')) {
+        closeLayer(state.layers-1, true);
       } else {
         layerGoToSlide(layer, slide);
       }
