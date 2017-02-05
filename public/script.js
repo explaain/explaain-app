@@ -170,7 +170,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
   };
   template +=           '<div class="card-image">';
   if (image) {
-    template +=           '<img src="' + image + '">';
+    template +=           '<div><img src="' + image + '"></div>';
   };
   template +=           '</div>';
   template +=           '<div class="body-content">'
@@ -199,7 +199,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
   $('.layer a').removeClass('active');
   var template = '';
   $.each(keys, function(i, key) {
-    key = getDataUrl(key); //Should we maybe call this "url" from here onwards?
+    var key = getDataUrl(key); //Should we maybe call this "url" from here onwards?
     var card = cards[key];
     if (!card) {
       card = {
@@ -215,6 +215,13 @@ var openLayer = function(layer, keys, slide, slideFrom) {
   template = '<div class="card-carousel layer layer-id-' + ongoingKeyCounter + '" id="layer-' + layer + '"' + slideFromAttr + '>' + template + '</div>';
 
   cardDOM = $(template).appendTo('.cards');
+
+  $.each(keys, function(j, key) {
+    var key = getDataUrl(key);
+    $( '.card[data-uri="' + key + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
+      $('.card[data-uri="' + key + '"]').closest('.card-carousel.layer').slick('setPosition');
+    });
+  });
 
   $('.layer-id-' + ongoingKeyCounter).slick({
     dots: false,
