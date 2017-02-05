@@ -211,8 +211,21 @@ h2 {
   font-size: 20px;
 }
 
+.card .card-image {
+  overflow: hidden;
+  max-height: 250px;
+  margin-bottom: 22px;
+}
+
+.card .card-image > div {
+  max-height: inherit;
+  transform: translateY(50%);
+}
+
 .card .card-image img {
   max-width: 100%;
+  display: block;
+  transform: translateY(-50%);
 }
 
 .body-content {
