@@ -47,7 +47,7 @@ var publishCard = function(json) {
   var key = json['@id'];
   json.key = key;
   json.title = json.name;
-  json.body = parseMarkdown(json.description);
+  json.body = json.description ? parseMarkdown(json.description) : ( json.caption ? parseMarkdown(json.caption) : '' ) ;
   if (json.moreDetail) {
     json.moreDetail = parseMarkdown(json.moreDetail);
   }
@@ -109,12 +109,20 @@ function updateCardDOM(uri, json) {
       body: 'Card not found',
     }
   }
+
   $('.card[data-uri="' + uri + '"]').find('h2').html(json.title);
   $('.card[data-uri="' + uri + '"]').find('.body-content').html(json.body);
   if (json.moreDetail) {
     $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
   }
+  if (json.contentUrl) { // If image
+    $('.card[data-uri="' + uri + '"]').find('.card-image').html('<img src="' + json.contentUrl + '">');
+  }
   $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
+
+  $( '.card[data-uri="' + uri + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
+    $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition');
+  });
 }
 
 
@@ -140,9 +148,9 @@ if (initialUrl) {
 
 
 var cardTemplate = function (key, title, body, moreDetail, image, topic, showHeaderImage, standalone) {
-  if (!image) {
-    image = '//placekitten.com/300/200';
-  }
+  // if (!image) {
+  //   image = '//placekitten.com/300/200';
+  // }
   var standaloneClass = standalone ? ' standalone' : '';
   var template =  '<div class="card opening' + standaloneClass + '" data-uri="' + key + '" style="height: auto;">'
   +                 '<div class="card-visible">';
@@ -151,7 +159,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
     template +=         '<div class="header-image">'
                 +         '<img src="' + image + '">'
                 +         '<h3>'
-                +           topic
+                +           title
                 +         '</h3>'
                 +       '</div>';
   } else {
@@ -160,6 +168,11 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +         title
                 +       '</h2>'
   };
+  template +=           '<div class="card-image">';
+  if (image) {
+    template +=           '<img src="' + image + '">';
+  };
+  template +=           '</div>';
   template +=           '<div class="body-content">'
                 +         '<p>'
                 +           body.replace(/\s/g,' ')
@@ -173,7 +186,7 @@ var cardTemplate = function (key, title, body, moreDetail, image, topic, showHea
                 +         '</p>';
   };
   template +=           '</div>'
-                +       '<a href="http://explaain.com" target="_blank"><div class="card-icon"><img src="/card-logo.png"></div></a>'
+                +       '<a href="http://explaain.com" target="_blank" class="card-icon"><img src="/card-logo.png"></a>'
                 +     '</div>'
                 +     '<button class="edit-button"><i class="fa fa-pencil" aria-hidden="true"></i></button>'
                 // +     '<div class="card-spacer"></div>'
@@ -196,7 +209,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
       };
       updateCard(key);
     }
-    template = template + cardTemplate(card.key, card.title, card.body, card.moreDetail, card.coverImage, card.topic, card.headline);
+    template = template + cardTemplate(card.key, card.title, card.body, card.moreDetail, card.contentUrl, card.topic, card.headline);
   });
   var slideFromAttr = slideFrom!=-1 ? 'slide-from="' + slideFrom + '"' : '';
   template = '<div class="card-carousel layer layer-id-' + ongoingKeyCounter + '" id="layer-' + layer + '"' + slideFromAttr + '>' + template + '</div>';
