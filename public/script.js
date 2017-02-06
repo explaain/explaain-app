@@ -116,7 +116,7 @@ function updateCardDOM(uri, json) {
     $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
   }
   if (json.contentUrl) { // If image
-    $('.card[data-uri="' + uri + '"]').find('.card-image').html('<img src="' + json.contentUrl + '">');
+    $('.card[data-uri="' + uri + '"]').find('.card-image').html('<div><img src="' + json.contentUrl + '"></div>');
   }
   $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
 
