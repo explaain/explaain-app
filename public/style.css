@@ -226,6 +226,7 @@ h2 {
   max-width: 100%;
   display: block;
   transform: translateY(-50%);
+  margin: auto;
 }
 
 .body-content {
