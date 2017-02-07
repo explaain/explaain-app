@@ -45,18 +45,29 @@ var hideOverlay = function() {
 
 var publishCard = function(json) {
   var key = json['@id'];
-  json.key = key;
-  json.title = json.name;
-  json.body = json.description ? parseMarkdown(json.description) : ( json.caption ? parseMarkdown(json.caption) : '' ) ;
-  if (json.moreDetail) {
-    json.moreDetail = parseMarkdown(json.moreDetail);
-  }
   cards[key] = json;
 }
 
-var importCards = function(url) { //Always returns an array
-  url = getDataUrl(url); //Possibly unnecessary as it already happens in openLayer()
+var getCards = function(key) {
   var deferred = Q.defer();
+
+  var card = cards[key];
+  if (card) {
+    deferred.resolve([card]);
+  } else {
+    importCards(key)
+    .then(function(returnedCards) {
+      deferred.resolve(returnedCards);
+    })
+  }
+
+  return deferred.promise;
+}
+
+var importCards = function(url) { //Always returns an array
+  var deferred = Q.defer();
+
+  url = getDataUrl(url); //Possibly unnecessary as it already happens in openLayer()
   $.ajax({
      url: url
   }).done(function(json) {
@@ -64,12 +75,14 @@ var importCards = function(url) { //Always returns an array
       json = [json];
     }
     for (var i in json) {
+      json[i] = parseCardMarkdown(json[i]);
       publishCard(json[i]);
     }
     deferred.resolve(json);
   }).fail(function(){
     deferred.resolve([]);
   });
+
   return deferred.promise;
 }
 
@@ -110,18 +123,15 @@ function updateCardDOM(uri, json) {
     }
   }
 
-  $('.card[data-uri="' + uri + '"]').find('h2').html(json.title);
-  $('.card[data-uri="' + uri + '"]').find('.body-content').html(json.body);
-  if (json.moreDetail) {
-    $('.card[data-uri="' + uri + '"]').find('.more-detail').html(json.moreDetail).prepend('<p class="label">More Detail</p>');
-  }
-  if (json.contentUrl) { // If image
-    $('.card[data-uri="' + uri + '"]').find('.card-image').html('<div><img src="' + json.contentUrl + '"></div>');
-  }
-  $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
+  getCardFormatTemplate(json)
+  .then(function(template) {
+    $('.card[data-uri="' + uri + '"]').find('.content').html(template);
 
-  $( '.card[data-uri="' + uri + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
-    $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition');
+    $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition'); //Forces Slick to refresh UI after potential card size change (e.g. after Loading)
+
+    $( '.card[data-uri="' + uri + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
+      $('.card[data-uri="' + uri + '"]').closest('.card-carousel.layer').slick('setPosition');
+    });
   });
 }
 
@@ -145,103 +155,94 @@ if (initialUrl) {
   });
 }
 
+var getCardType = function(card) {
+  return card['@type'] ? /[^/]*$/.exec(card['@type'])[0] : 'card';
+}
 
+var getCardTemplate = function(card) {
+  var deferred = Q.defer();
 
-var cardTemplate = function (key, title, body, moreDetail, image, topic, showHeaderImage, standalone) {
-  // if (!image) {
-  //   image = '//placekitten.com/300/200';
-  // }
-  var standaloneClass = standalone ? ' standalone' : '';
-  var template =  '<div class="card opening' + standaloneClass + '" data-uri="' + key + '" style="height: auto;">'
-  +                 '<div class="card-visible">';
-    // +                   '<div class="card-grey"><div></div></div>';
-  if (showHeaderImage) {
-    template +=         '<div class="header-image">'
-                +         '<img src="' + image + '">'
-                +         '<h3>'
-                +           title
-                +         '</h3>'
-                +       '</div>';
-  } else {
-    template +=         '<div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>'
-                +       '<h2>'
-                +         title
-                +       '</h2>'
-  };
-  template +=           '<div class="card-image">';
-  if (image) {
-    template +=           '<div><img src="' + image + '"></div>';
-  };
-  template +=           '</div>';
-  template +=           '<div class="body-content">'
-                +         '<p>'
-                +           body.replace(/\s/g,' ')
-                +         '</p>'
-                +       '</div>'
-                +       '<div class="more-detail">';
-  if (moreDetail) {
-  template +=             '<p class="label">More Detail</p>'
-                +         '<p>'
-                 moreDetail.replace(/\s/g,' ');
-                +         '</p>';
-  };
-  template +=           '</div>'
-                +       '<a href="http://explaain.com" target="_blank" class="card-icon"><img src="/card-logo.png"></a>'
-                +     '</div>'
-                +     '<button class="edit-button"><i class="fa fa-pencil" aria-hidden="true"></i></button>'
-                // +     '<div class="card-spacer"></div>'
-                +   '</div>';
-  return template;
-};
+  getCardFormatTemplate(card)
+  .then(function(formatTemplate) {
+    $.get('/cards/card.mst', function(template) {
+      var data = {uri: card['@id'], content: formatTemplate}
+      var rendered = Mustache.render(template, data);
+      deferred.resolve(rendered);
+    });
+  });
+
+  return deferred.promise;
+}
+
+var getCardFormatTemplate = function(card) {
+  var deferred = Q.defer();
+
+  var type = getCardType(card);
+  $.get('/cards/' + type + '.mst', function(template) {
+    var rendered = Mustache.render(template, card);
+    deferred.resolve(rendered);
+  });
+
+  return deferred.promise;
+}
 
 
 var openLayer = function(layer, keys, slide, slideFrom) {
   $('.layer a').removeClass('active');
   var template = '';
+  var getCardPromises = [];
+  var templatePromises = [];
   $.each(keys, function(i, key) {
     var key = getDataUrl(key); //Should we maybe call this "url" from here onwards?
-    var card = cards[key];
-    if (!card) {
-      card = {
-        key: key,
-        title: '',
-        body: 'Loading...'
-      };
-      updateCard(key);
-    }
-    template = template + cardTemplate(card.key, card.title, card.body, card.moreDetail, card.contentUrl, card.topic, card.headline);
+    getCardPromises[i] = getCards(key)
+    .then(function(returnedCards) {
+      var card = returnedCards[0];
+      templatePromises[i] = getCardTemplate(card, false);
+    })
   });
-  var slideFromAttr = slideFrom!=-1 ? 'slide-from="' + slideFrom + '"' : '';
-  template = '<div class="card-carousel layer layer-id-' + ongoingKeyCounter + '" id="layer-' + layer + '"' + slideFromAttr + '>' + template + '</div>';
 
-  cardDOM = $(template).appendTo('.cards');
+  Q.allSettled(getCardPromises)
+  .then(function(results) {
+    Q.allSettled(templatePromises)
+    .then(function(results) {
+      results.forEach(function (resultTemplate) {
+        template += resultTemplate.value;
+      });
 
-  $.each(keys, function(j, key) {
-    var key = getDataUrl(key);
-    $( '.card[data-uri="' + key + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
-      $('.card[data-uri="' + key + '"]').closest('.card-carousel.layer').slick('setPosition');
+      var slideFromAttr = slideFrom!=-1 ? 'slide-from="' + slideFrom + '"' : '';
+      template = '<div class="card-carousel layer layer-id-' + ongoingKeyCounter + '" id="layer-' + layer + '"' + slideFromAttr + '>' + template + '</div>';
+
+      cardDOM = $(template).appendTo('.cards');
+
+      $.each(keys, function(j, key) {
+        var key = getDataUrl(key);
+        $( '.card[data-uri="' + key + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
+          $('.card[data-uri="' + key + '"]').closest('.card-carousel.layer').slick('setPosition');
+        });
+      });
+
+      $('.layer-id-' + ongoingKeyCounter).slick({
+        dots: false,
+        infinite: false,
+        adaptiveHeight: true,
+        centerMode: true,
+        centerPadding: '15px',
+        slidesToShow: 1,
+        arrows: false,
+        initialSlide: slide
+      });
+
+      state.layers++;
+      ongoingKeyCounter++;
+
+      $('.card').removeClass('opening');
+      setTimeout(function() { //This makes sure the iframe resizes after th 0.5s transition in the CSS
+        updateFrameSize();
+      }, 600)
+      focusLayer(layer);
     });
   });
 
-  $('.layer-id-' + ongoingKeyCounter).slick({
-    dots: false,
-    infinite: false,
-    adaptiveHeight: true,
-    centerMode: true,
-    centerPadding: '15px',
-    slidesToShow: 1,
-    arrows: false,
-    initialSlide: slide
-  });
-
-  state.layers++;
-  ongoingKeyCounter++;
-
-  $('.card').removeClass('opening');
-  setTimeout(function() { //This makes sure the iframe resizes after th 0.5s transition in the CSS
-    updateFrameSize();
-  }, 600)
-  focusLayer(layer);
 }
 
 var closeLayer = function(layer, allowHideOverlay) {
@@ -518,6 +519,20 @@ function addStyleString(str) {
     document.body.appendChild(node);
 }
 
+var parseCardMarkdown = function(card) {
+  var eligibleFields = [
+    'description',
+    'body',
+    'moreDetail',
+    'caption'
+  ]
+  eligibleFields.forEach(function(field) {
+    if (card[field]) {
+      card[field] = parseMarkdown(card[field]);
+    }
+  })
+  return card;
+}
 
 var parseMarkdown = function(text) {
   return markdown.toHTML(text);

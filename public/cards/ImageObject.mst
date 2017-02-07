@@ -1,0 +1,12 @@
+<h2>
+  {{name}}
+</h2>
+<!-- <div class="card-image">{{image}}</div> -->
+<div class="card-image">
+  <div>    
+    <img src="{{{contentUrl}}}">
+  </div>
+</div>
+<div class="body-content">
+  {{{caption}}}
+</div>
