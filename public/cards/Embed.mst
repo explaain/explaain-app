@@ -1,10 +1,8 @@
 <h2>
   {{name}}
 </h2>
-<div class="card-image">
-  <div>
-    <img src="{{{contentUrl}}}">
-  </div>
+<div class="embed">
+  {{{embedUrl}}}
 </div>
 <div class="body-content">
   {{{caption}}}

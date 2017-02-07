@@ -211,7 +211,7 @@ h2 {
   font-size: 20px;
 }
 
-.card .card-image {
+.card .card-image, .card .embed {
   max-height: 250px;
   overflow: hidden;
   margin-top: 22px;
@@ -227,6 +227,11 @@ h2 {
   display: block;
   transform: translateY(-50%);
   margin: auto;
+}
+
+.card .embed iframe {
+  width: 100%;
+  height: auto;
 }
 
 .body-content {
