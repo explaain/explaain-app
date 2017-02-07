@@ -214,7 +214,7 @@ h2 {
 .card .card-image {
   max-height: 250px;
   overflow: hidden;
-  margin-bottom: 22px;
+  margin-top: 22px;
 }
 
 .card .card-image > div {
