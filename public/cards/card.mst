@@ -1,0 +1,19 @@
+
+<div class="card opening" data-uri="{{uri}}" style="height: auto">
+  <div class="card-visible">
+    <div class="close">
+      <i class="fa fa-times" aria-hidden="true">
+      </i>
+    </div>
+    <div class="content">
+      {{{content}}}
+    </div>
+    <a href="http://explaain.com" target="_blank" class="card-icon" tabindex="-1" data-external="true">
+      <img src="/card-logo.png">
+    </a>
+  </div>
+  <button class="edit-button" tabindex="-1">
+    <i class="fa fa-pencil" aria-hidden="true">
+    </i>
+  </button>
+</div>

@@ -214,7 +214,6 @@ h2 {
 .card .card-image {
   overflow: hidden;
   max-height: 250px;
-  margin-bottom: 22px;
 }
 
 .card .card-image > div {
@@ -268,6 +267,8 @@ h2 {
   width: 26px;
   overflow: hidden;
   transition: width 0.5s;
+  pointer-events: none;
+  cursor: default;
 }
 .card .card-icon:hover {
   width: 104px;
@@ -278,6 +279,10 @@ h2 {
   -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
   filter: grayscale(100%);
   transition: opacity 0.5s;
+}
+.cards .layer:last-child .card .card-icon {
+  pointer-events: all;
+  cursor: pointer;
 }
 .cards .layer:last-child .card .card-icon img {
   opacity: 0.6;
