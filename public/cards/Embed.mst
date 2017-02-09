@@ -1,8 +1,8 @@
 <h2>
   {{name}}
 </h2>
-<div class="embed">
-  {{{embedUrl}}}
+<div class="card-embed">
+  {{{embedCode}}}
 </div>
 <div class="body-content">
   {{{caption}}}

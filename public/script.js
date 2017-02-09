@@ -7,7 +7,9 @@ var tempCards;
 var waitingForDoctop = true;
 var ongoingKeyCounter = 0;
 state.layers = 0;
-var temp;
+var CardTemplates = {};
+
+var Count = 0;
 
 
 if (touchscreen != true) {
@@ -75,7 +77,7 @@ var importCards = function(url) { //Always returns an array
       json = [json];
     }
     for (var i in json) {
-      json[i] = parseCardMarkdown(json[i]);
+      json[i] = parseCard(json[i]);
       publishCard(json[i]);
     }
     deferred.resolve(json);
@@ -159,16 +161,27 @@ var getCardType = function(card) {
   return card['@type'] ? /[^/]*$/.exec(card['@type'])[0] : 'card';
 }
 
-var getCardTemplate = function(card) {
+var getIfNecessary = function(path, necessaryObject, necessaryProperty) {
   var deferred = Q.defer();
 
-  getCardFormatTemplate(card)
-  .then(function(formatTemplate) {
-    $.get('/cards/card.mst', function(template) {
-      var data = {uri: card['@id'], content: formatTemplate}
-      var rendered = Mustache.render(template, data);
-      deferred.resolve(rendered);
+  if (necessaryObject[necessaryProperty]) {
+    deferred.resolve();
+  } else {
+    $.get(path, function(result) {
+      necessaryObject[necessaryProperty] = result;
+      deferred.resolve();
     });
+  }
+
+  return deferred.promise;
+}
+
+var getTemplate = function(type) {
+  var deferred = Q.defer();
+
+  getIfNecessary('/cards/' + type + '.mst', CardTemplates, type)
+  .then(function() {
+    deferred.resolve();
   });
 
   return deferred.promise;
@@ -178,13 +191,32 @@ var getCardFormatTemplate = function(card) {
   var deferred = Q.defer();
 
   var type = getCardType(card);
-  $.get('/cards/' + type + '.mst', function(template) {
-    var rendered = Mustache.render(template, card);
+  getTemplate(type)
+  .then(function() {
+    var rendered = Mustache.render(CardTemplates[type], card);
     deferred.resolve(rendered);
+  })
+
+  return deferred.promise;
+}
+
+var getCardTemplate = function(card) {
+  var deferred = Q.defer();
+
+  getCardFormatTemplate(card)
+  .then(function(formatTemplate) {
+    getTemplate('card')
+    .then(function() {
+      var type = getCardType(card);
+      var data = {uri: card['@id'], type: type, content: formatTemplate};
+      var rendered = Mustache.render(CardTemplates['card'], data);
+      deferred.resolve(rendered);
+    });
   });
 
   return deferred.promise;
 }
+
 
 
 var openLayer = function(layer, keys, slide, slideFrom) {
@@ -330,7 +362,6 @@ $(".cards").on("click", "a", function(event){
     } else {
       var slide = $(this).index();
       var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
-      temp = $(this).closest('.layer > div');
       var layer = getLayerNumber($(this));
       var allKeys = [];
       $.each($(this).closest('.body-content').find('a'), function(i, link) {
@@ -517,6 +548,24 @@ function addStyleString(str) {
     var node = document.createElement('style');
     node.innerHTML = str;
     document.body.appendChild(node);
+}
+
+var parseCard = function(card) {
+  card = parseCardEncodes(card);
+  card = parseCardMarkdown(card);
+  return card;
+}
+
+var parseCardEncodes = function(card) {
+  var eligibleFields = [
+    'embedCode'
+  ]
+  eligibleFields.forEach(function(field) {
+    if (card[field]) {
+      card[field] = decodeURIComponent(card[field]).replace(/&quot;/g, '"');;
+    }
+  })
+  return card;
 }
 
 var parseCardMarkdown = function(card) {

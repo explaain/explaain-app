@@ -5,7 +5,7 @@
       <i class="fa fa-times" aria-hidden="true">
       </i>
     </div>
-    <div class="content">
+    <div class="content {{type}}">
       {{{content}}}
     </div>
     <a href="http://explaain.com" target="_blank" class="card-icon" tabindex="-1" data-external="true">
