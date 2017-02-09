@@ -107,7 +107,7 @@ body.embed .cards {
 
 .card .card-visible {
   min-height: 120px;
-  padding-bottom: 15px;
+  padding-bottom: 18px;
   border: 1px solid #ddd;
   border-radius: 10px;
   overflow: hidden;
@@ -184,6 +184,10 @@ body.overlay .cards .card-carousel:nth-last-child(1) .card .card-visible > div.c
   display: block; /* ... except in an overlay! */
 }
 
+.card .content {
+    margin: 22px 0;
+}
+
 .header-image {
   height: 150px;
   background: rgba(0,0,0,0.2);
@@ -211,10 +215,10 @@ h2 {
   font-size: 20px;
 }
 
-.card .card-image, .card .embed {
+.card .card-image, .card .card-embed {
   max-height: 250px;
   overflow: hidden;
-  margin-top: 22px;
+  margin: 16px 0;
 }
 
 .card .card-image > div {
@@ -229,13 +233,13 @@ h2 {
   margin: auto;
 }
 
-.card .embed iframe {
+.card .card-embed iframe {
   width: 100%;
   height: auto;
 }
 
 .body-content {
-  /*min-height: 70px;*/
+  margin: -4px 0;
 }
 .body-content, .more-detail {
   padding: 0 20px;
