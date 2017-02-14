@@ -24,6 +24,10 @@ body > .body-double {
   padding-top: 120px;
 }
 
+body.embed > .body-double, body.overlay > .body-double {
+  padding-top: 20px;
+}
+
 a:focus {
   outline: 0;
 }
