@@ -1,5 +1,10 @@
+html {
+  height: 100%;
+}
+
 body {
-  padding: 20px 0 0 0;
+  min-height: 100%;
+  padding: 0;
   background: none;
   font-family: Lato;
   color: #333;
@@ -14,6 +19,24 @@ body.app {
   background: #ddd;
 }
 
+body > .body-double {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-top: 120px;
+}
+
+body.embed > .body-double, body.overlay > .body-double {
+  padding-top: 20px;
+}
+
+body.embed:not(.overlay) > .body-double {
+  position: static;
+  height: auto;
+}
+
 a:focus {
   outline: 0;
 }
@@ -26,9 +49,9 @@ a:focus {
   z-index: 100000;
   text-align: center;
   left: 0;
+  top: 0;
   width: 100%;
-  padding: 10px 0;
-  margin-top: -20px;
+  padding: 30px 0;
 }
 
 .logo img {
@@ -68,7 +91,6 @@ body.embed.overlay .overlay-close-button {
 
 .cards {
   margin: 0 auto;
-  margin-top: 80px;
   max-width: 380px;
 }
 

@@ -348,12 +348,14 @@ var scrollToCard = function(layer, slide) { //Not sure whether this is working?
 
 
 //UI Interaction
-$("html").on("click", function(event){
+$("body > .body-double").on("click", function(event){
+  console.log(event);
   if( !$(event.target).is(".cards") ) {
     hideOverlay();
   }
 });
 $(".cards").on("click", "a", function(event){
+  console.log(event);
   if ($(this).attr('href') != "http://explaain.com") { //Probably need a better way of doing this!
     event.preventDefault();
     event.stopPropagation();
@@ -378,13 +380,15 @@ $(".cards").on("click", "a", function(event){
     }
   }
 });
-$(".cards").on("click", "div.close", function(){
+$(".cards").on("click", "div.close", function(event){
+  console.log(event);
   event.stopPropagation();
   // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
   closeLayer(layer, true);
 });
-$(".cards").on("click", ".card", function(){
+$(".cards").on("click", ".card", function(event){
+  console.log(event);
   event.stopPropagation();
   var layer = getLayerNumber($(this));
   var targetLayer = layer + 1;
@@ -401,7 +405,8 @@ $(".cards").on("click", ".card", function(){
     }
   }
 });
-$(".cards").on("click", ".card .edit-button", function(){
+$(".cards").on("click", ".card .edit-button", function(event){
+  console.log(event);
   event.stopPropagation();
   var key = $(this).closest('.card').attr('data-uri');
   window.parent.postMessage({action: 'edit', id: key}, "*");
