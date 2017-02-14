@@ -358,7 +358,7 @@ $(".cards").on("click", "a", function(event){
   console.log(event);
   if ($(this).attr('href') != "http://explaain.com") { //Probably need a better way of doing this!
     event.preventDefault();
-    //event.stopPropagation();
+    event.stopPropagation();
     if (state.embedLinkRoute) {
       window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
     } else {
@@ -382,14 +382,14 @@ $(".cards").on("click", "a", function(event){
 });
 $(".cards").on("click", "div.close", function(event){
   console.log(event);
-  //event.stopPropagation();
+  event.stopPropagation();
   // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
   closeLayer(layer, true);
 });
 $(".cards").on("click", ".card", function(event){
   console.log(event);
-  //event.stopPropagation();
+  event.stopPropagation();
   var layer = getLayerNumber($(this));
   var targetLayer = layer + 1;
   if(!$(event.target).is("a") && !$(event.target).is("div.close") && !$(event.target).is(".edit-button") && !$(event.target).is(".edit-button i") ) {
@@ -407,7 +407,7 @@ $(".cards").on("click", ".card", function(event){
 });
 $(".cards").on("click", ".card .edit-button", function(event){
   console.log(event);
-  //event.stopPropagation();
+  event.stopPropagation();
   var key = $(this).closest('.card').attr('data-uri');
   window.parent.postMessage({action: 'edit', id: key}, "*");
 });

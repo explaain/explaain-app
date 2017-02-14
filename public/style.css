@@ -1,8 +1,9 @@
-html, body {
+html {
   height: 100%;
 }
 
 body {
+  min-height: 100%;
   padding: 0;
   background: none;
   font-family: Lato;
@@ -19,13 +20,21 @@ body.app {
 }
 
 body > .body-double {
-  box-sizing: border-box;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   padding-top: 120px;
 }
 
 body.embed > .body-double, body.overlay > .body-double {
   padding-top: 20px;
+}
+
+body.embed:not(.overlay) > .body-double {
+  position: static;
+  height: auto;
 }
 
 a:focus {
