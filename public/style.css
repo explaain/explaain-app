@@ -268,7 +268,21 @@ h2 {
   line-height: 1.9;
 }
 
-.body-content a, .more-detail a {
+.card .content a {
+  padding: 0 3px;
+  background: #ebebeb;
+  border: 2px solid #ebebeb;
+  text-decoration: none;
+  color: #333;
+}
+
+.card .content a:hover, .card .content a:active, .card .content a.active {
+  color: white;
+  background: #ff6e73;
+  border: 2px solid #ff6e73;
+}
+
+/*.body-content a, .more-detail a {
   padding: 0 3px;
   background: #ebebeb;
   border: 2px solid #ebebeb;
@@ -280,7 +294,7 @@ h2 {
   color: white;
   background: #ff6e73;
   border: 2px solid #ff6e73;
-}
+}*/
 
 .more-detail > p.label {
   font-size: 14px;
@@ -288,6 +302,54 @@ h2 {
   font-weight: 600;
   text-transform: uppercase;
   color: #888;
+}
+
+.card .content:not(.answered) a {
+  pointer-events: none;
+  cursor: default;
+  padding: 0;
+  border: none;
+  background: none;
+  text-decoration: none;
+  color: auto;
+}
+.card .content:not(.answered) a:hover {
+  padding: 0;
+  border: none;
+  background: none;
+  text-decoration: none;
+  color: auto;
+}
+
+.card .answers {
+  text-align: center;
+  padding: 5px;
+}
+.card .answers .answer {
+  display: inline-block;
+  width: 49%;
+  margin: 5px 0;
+}
+.card .answers .answer p {
+  display: block;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  text-align: center;
+  margin: 0 5px;
+  padding: 0.5em 0;
+}
+.card .content:not(.answered) .answers .answer p:hover {
+  cursor: pointer;
+  background: #eee;
+}
+.card .answers .answer.selected p {
+  background: #dd0000;
+  color: white;
+}
+.card .answers .answer.correct p {
+  background: #00bb00;
+  color: white;
 }
 
 

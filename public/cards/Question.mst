@@ -1,0 +1,29 @@
+<h2>
+  {{{question}}}
+</h2>
+<div class="card-image">
+  <div>
+    <img src="{{{contentUrl}}}">
+  </div>
+</div>
+<div class="body-content">
+  {{{description}}}
+</div>
+<div class="body-content">
+  {{{caption}}}
+</div>
+
+<div class="answers">
+  <div class="answer">
+    {{{answer1}}}
+  </div>
+  <div class="answer">
+    {{{answer2}}}
+  </div>
+  <div class="answer">
+    {{{answer3}}}
+  </div>
+  <div class="answer">
+    {{{answer4}}}
+  </div>
+</div>

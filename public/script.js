@@ -349,13 +349,11 @@ var scrollToCard = function(layer, slide) { //Not sure whether this is working?
 
 //UI Interaction
 $("body > .body-double").on("click", function(event){
-  console.log(event);
   if( !$(event.target).is(".cards") ) {
     hideOverlay();
   }
 });
 $(".cards").on("click", "a", function(event){
-  console.log(event);
   if ($(this).attr('href') != "http://explaain.com") { //Probably need a better way of doing this!
     event.preventDefault();
     event.stopPropagation();
@@ -381,14 +379,12 @@ $(".cards").on("click", "a", function(event){
   }
 });
 $(".cards").on("click", "div.close", function(event){
-  console.log(event);
   event.stopPropagation();
   // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
   closeLayer(layer, true);
 });
 $(".cards").on("click", ".card", function(event){
-  console.log(event);
   event.stopPropagation();
   var layer = getLayerNumber($(this));
   var targetLayer = layer + 1;
@@ -406,11 +402,30 @@ $(".cards").on("click", ".card", function(event){
   }
 });
 $(".cards").on("click", ".card .edit-button", function(event){
-  console.log(event);
   event.stopPropagation();
   var key = $(this).closest('.card').attr('data-uri');
   window.parent.postMessage({action: 'edit', id: key}, "*");
 });
+
+
+// BEGIN QUIZ
+
+$(".cards").on("click", ".card .content.Question .answers:not(.answered) .answer p", function(event){
+  event.stopPropagation();
+  if (!$(this).closest('.content').hasClass('answered')) {
+    $(this).closest('.content').addClass('answered');
+    $(this).closest('.answer').addClass('selected');
+    var key = $(this).closest('.card').attr('data-uri');
+    $(this).closest('.answers').find('.answer:nth-child(' + cards[key].correctAnswer + ')').addClass('correct');
+    var correct = parseInt(cards[key].correctAnswer) == $(this).closest('.answer').index() + 1;
+    window.parent.postMessage({ frameId: state.frameId, action: 'explaain-answer', correct: correct}, "*");
+  }
+});
+
+// END QUIZ
+
+
+
 
 
 // On before slide change
@@ -578,7 +593,12 @@ var parseCardMarkdown = function(card) {
     'description',
     'body',
     'moreDetail',
-    'caption'
+    'caption',
+    'question',
+    'answer1',
+    'answer2',
+    'answer3',
+    'answer4',
   ]
   eligibleFields.forEach(function(field) {
     if (card[field]) {
