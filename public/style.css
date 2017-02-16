@@ -304,7 +304,7 @@ h2 {
   color: #888;
 }
 
-.card .content:not(.answered) a {
+.card .content.Question:not(.answered) a, .card .content.Question:not(.answered) a.explaain-link {
   pointer-events: none;
   cursor: default;
   padding: 0;
@@ -313,7 +313,7 @@ h2 {
   text-decoration: none;
   color: auto;
 }
-.card .content:not(.answered) a:hover {
+.card .content.Question:not(.answered) a:hover, .card .content.Question:not(.answered) a.explaain-link:hover {
   padding: 0;
   border: none;
   background: none;

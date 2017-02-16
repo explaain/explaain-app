@@ -535,7 +535,7 @@ if (state.editing) {
 
 window.addEventListener('message', function(event) {
    switch (event.data.action) {
-      case "open": //Does exactly the same as 'preview' but the card id variable is called 'key' not 'id'
+      case "open":
         closeAllLayers(false);
         openLayer(0, [event.data.key], 0, 0);
         break;
