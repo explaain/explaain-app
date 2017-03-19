@@ -211,7 +211,7 @@ body.overlay .cards .card-carousel:nth-last-child(1) .card .card-visible > div.c
 }
 
 .card .content {
-    margin: 22px 0;
+    margin: 1.7em 0;
 }
 
 .header-image {
@@ -237,8 +237,8 @@ body.overlay .cards .card-carousel:nth-last-child(1) .card .card-visible > div.c
 
 h2 {
   padding: 0 20px;
-  margin: 22px 0 0 0;
-  font-size: 20px;
+  margin: 1.05em 0 0 0;
+  font-size: 1.3em;
 }
 
 .card .card-image, .card .card-embed {
@@ -423,8 +423,6 @@ h2 {
 }
 
 
-
-
 body.desktop .body-content a:hover, body.desktop .more-detail a:hover {
   color: white;
   background: #ff6e73;
@@ -450,4 +448,61 @@ body.desktop .card.faded .card-grey > div {
 }
 body.desktop .card.faded .card-grey:hover > div {
   background: rgba(255,255,255,0.1);
+}
+
+
+
+
+
+@media (max-width: 320px) {
+  body.embed > .body-double, body.overlay > .body-double {
+    padding-top: 0;
+  }
+  .overlay-close-button {
+    margin: 20px auto;
+    font-size: 0.9em;
+  }
+
+  .card {
+    font-size: 0.8em;
+    line-height: 1.7;
+  }
+  .card .card-visible {
+    padding-bottom: 1.2em;
+  }
+  .card .content {
+    margin: 1.3em 0;
+  }
+  .card h2, .card .body-content {
+    padding: 0 15px;
+  }
+  .card h2 {
+    font-size: 1.2em;
+  }
+  .card .content a {
+    padding: 0 2px;
+    border: 1px solid #ebebeb;
+  }
+  .card .content a:hover, .card .content a:active, .card .content a.active {
+    border: 1px solid #ff6e73;
+  }
+
+  .card .card-icon {
+    right:  6px;
+    bottom: 1px;
+    height: 30px;
+    width: 26px;
+  }
+  .card .card-icon:hover {
+    width: 100px;
+  }
+  .card .card-icon img {
+    height: 28px;
+  }
+
+
+
+  body.desktop .body-content a:hover, body.desktop .more-detail a:hover {
+    border: 1px solid #ff6e73;
+  }
 }
