@@ -1,7 +1,6 @@
 var state = {};
 
 var cards = {}; // object with key ids
-var cardLists = []; cardLists[0] = [];
 var focusPosition = [];
 var tempCards;
 var waitingForDoctop = true;
@@ -147,13 +146,14 @@ if (initialCardType && initialCardID) {
 }
 
 if (!initialUrl && state.embedType != 'overlay') {
-  initialUrl = defaultSource + '/Person/search?name=may';
+  initialUrl = defaultSource + '/Person/search?name=hammond';
 }
 
 if (initialUrl) {
   importCards(initialUrl)
   .then(function(json) {
-    openLayer(0, [json[0]['@id']], 0, -1);
+    // openLayer(0, [json[0]['@id']], 0, -1);
+    showCard(json[0]['@id'], 'open');
   });
 }
 
@@ -218,8 +218,209 @@ var getCardTemplate = function(card) {
 }
 
 
+//This should be called immediately from click and should handle all situations, e.g. card loaded/not loaded; layer loaded/not loaded etc
+var showCard = function(triggerTarget, triggerType) {
+  var toPos, toDOM, fromPos, fromDOM, fromURI, toLayerKeys;
+
+  switch (triggerType) {
+    case 'open':
+      toURI = getTargetURI(triggerTarget, 'card');
+      fromPos = [-1, -1];
+      toPos = [0, 0];
+      toLayerKeys = [toURI];
+      break;
+
+    case 'link':
+      toURI = getTargetURI(triggerTarget, 'link');
+      fromPos = getCardPosition(triggerTarget);
+      fromDOM = getCardDOM(triggerTarget);
+      toLayerKeys = getCardLinks(fromDOM);
+      toPos = getSelectedCardPos(fromPos, toURI, toLayerKeys);
+      break;
+
+    case 'select':
+      toPos = getCardPosition(triggerTarget);
+      fromPos = [ toPos[0]-1, 0 ];
+      fromDOM = getCardDOM(fromPos);
+      toLayerKeys = getCardLinks(fromDOM);
+      break;
+
+    case 'close':
+      closePos = getCardPosition(triggerTarget);
+      toURI = getTargetURI([ closePos[0]-1, 0 ], 'card');
+      fromPos = [ closePos[0]-2, 0 ];
+      fromDOM = getCardDOM(fromPos);
+      toLayerKeys = getCardLinks(fromDOM);
+      toPos = getSelectedCardPos(fromPos, toURI, toLayerKeys);
+      break;
+  }
+
+  console.log(toURI, toPos, toDOM, fromPos, fromDOM, toLayerKeys);
+
+  var layerManipPromises = [];
+
+  console.log(toPos[0]);
+  console.log(state.layers);
+  console.log(toPos[0] + 1 - state.layers);
+
+  switch ( Math.sign(toPos[0] + 1 - state.layers) ) {
+    case (+1):
+      //Opening on a new layer
+      layerManipPromises[0] = openLayer(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
+      console.log(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
+      break;
+
+    case (0):
+      //Opening on current layer
+      layerManipPromises[0] = resolvedPromise();
+      break;
+
+    case (-1):
+      //Opening on a previous layer (meaning we also close existing layers)
+      for(i = toPos[0] + 1; i < state.layers; i++) {
+        layerManipPromises[i - toPos[0] - 1] = closeLayer(i, true);
+      }
+      break;
+  }
+
+  Q.allSettled(layerManipPromises)
+  .then(function() {
+    state.layers = toPos[0] + 1;
+    layerGoToSlide(fromPos, toPos);
+  });
+
+}
+
+var resolvedPromise = function() {
+    var deferred = Q.defer();
+    deferred.resolve();
+    return deferred.promise;
+}
+
+var getSelectedCardPos = function(fromPos, toURI, toLayerKeys) {
+   return [ fromPos[0]+1, $.inArray(toURI, toLayerKeys) ];
+}
+
+// Whether target is a URI, Position or a DOM element, this returns the relevant card DOM element
+var getTargetType = function(target) {
+  if (Array.isArray(target)) {
+    return 'position';
+  } else {
+    try {
+      if ($(target)) {
+        return 'DOM';
+      }
+    } catch(e) {
+      return 'URI';
+    }
+  }
+}
+
+// Whether target is a URI, Position or DOM element, this returns the relevant card URI or 'a' element's href attribute
+var getTargetURI = function(target, type) {
+  console.log(target, type, getTargetType(target));
+  var uri;
+  switch (getTargetType(target)) {
+    case 'URI':
+      uri = target;
+      break;
+    case 'position':
+      uri = $($('#layer-' + target[0] + ' .card.slick-slide:not(.removed)')[target[1]]).attr('data-uri');
+      break;
+    case 'DOM':
+      switch (type) {
+        case 'link':
+          uri = $(target).attr('href');
+          break;
+
+        case 'card':
+          uri = $(target).closest('.card').attr('data-uri');
+          break;
+      }
+      break;
+  }
+
+  if (!uri || !uri.length) {
+    uri = -1;
+  }
+
+  console.log(uri);
+  return uri;
+}
+
+// Whether target is a URI, Position or a DOM element, this returns the relevant card DOM element
+var getCardDOM = function(target) {
+  var cardDOM;
+  switch (getTargetType(target)) {
+    case 'URI':
+      cardDOM = $('.card.slick-slide[data-uri="' + target + '"]');
+      break;
+    case 'position':
+      cardDOM = $($('#layer-' + target[0] + ' .card.slick-slide:not(.removed)')[target[1]]);
+      break;
+    case 'DOM':
+      cardDOM = $(target).closest('.card');
+      break;
+  }
+
+  if (!cardDOM || !cardDOM.length) {
+    cardDOM = -1;
+  }
+
+  return cardDOM;
+}
+
+//Returns an array of [layer #, card #], both starting at 0. 'target' can be cardDOM, URI or [layer, URI]
+var getCardPosition = function(target) {
+  var cardPos = [];
+  switch (getTargetType(target)) {
+    case 'URI':
+      cardPos[0] = $('.card.slick-slide[data-uri="' + target + '"]').closest('.card-carousel.layer').index();
+      cardPos[1] = $('.card.slick-slide[data-uri="' + target + '"]').index();
+      break;
+    case 'position':
+      cardPos = target;
+      break;
+    case 'DOM':
+      cardPos[0] = $(target).closest('.card-carousel.layer').index();
+      cardPos[1] = $(target).closest('.card.slick-slide').index();
+      break;
+  }
+
+  if (!cardPos || !cardPos.length) {
+    cardPos = -1;
+  }
+
+  return cardPos;
+
+
+
+
+  targetDOM = getCardDOM(target);
+
+  var layerPos = $(targetDOM).closest('.card-carousel.layer').index();
+  var cardPos = $(targetDOM).closest('.card.slick-slide').index();
+
+  return [layerPos, cardPos];
+}
+
+var getCardLinks = function(target) {
+  var allKeys = [];
+  $.each($(target).find('.body-content').find('a'), function(i, link) {
+    allKeys.push($(link).attr('href'));
+  });
+  return allKeys;
+}
+
+var checkHideOverlay = function() {
+  if (state.layers == 0) {
+    hideOverlay();
+  }
+}
 
 var openLayer = function(layer, keys, slide, slideFrom) {
+  var deferred = Q.defer();
+
   $('.layer a').removeClass('active');
   var template = '';
   var getCardPromises = [];
@@ -264,7 +465,6 @@ var openLayer = function(layer, keys, slide, slideFrom) {
         initialSlide: slide
       });
 
-      state.layers++;
       ongoingKeyCounter++;
 
       $('.card').removeClass('opening');
@@ -272,40 +472,43 @@ var openLayer = function(layer, keys, slide, slideFrom) {
         updateFrameSize();
       }, 600)
       focusLayer(layer);
+
+      deferred.resolve();
     });
   });
 
+  return deferred.promise;
 }
 
 var closeLayer = function(layer, allowHideOverlay) {
+  var deferred = Q.defer();
+
   $('#layer-' + layer).find('.card').addClass('removed');
   $('#layer-' + layer).fadeOut(500, function() { $(this).remove(); });
-  state.layers--;
-  if(state.layers > 0) {
-    var prevLayer = layer - 1;
-    $('#layer-' + prevLayer).find('a').removeClass('active');
-    if (prevLayer > 0) {
-      // $('#layer-' + prevLayer).find('div.close').show();
-    }
-    focusLayer(prevLayer);
-  } else if (allowHideOverlay) {
+
+  if (state.layers == 0 && allowHideOverlay) {
     hideOverlay();
   }
+
+  deferred.resolve();
+
+  return deferred.promise;
 }
 
 var closeAllLayers = function(thenHideOverlay) {
-    for (i=state.layers-1; i>=0; i--) {
+  for (i=state.layers-1; i>=0; i--) {
     closeLayer(i, thenHideOverlay);
   }
+  state.layers = 0;
 }
 
 var focusLayer = function(layer) {
-  var slide = getLayerCurrentCard(layer);
-  highlightLink(layer, slide);
-  scrollToCard(layer, slide);
+  // highlightLink(layer, slide);
+  scrollToLayer(layer);
   var slideFrom = $('#layer-' + layer).attr('slide-from');
   var slideFromN = parseInt(slideFrom) + 1;
   if (layer > 1) {
+    console.log(slideFromN);
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('.card').addClass('removed');
     $('#layer-' + prevLayer).find('.card:nth-child(' + slideFromN + ')').removeClass('removed');
@@ -317,10 +520,13 @@ var focusLayer = function(layer) {
   // $('#layer-' + layer).slick('slickSetOption', 'dots', true);
 }
 
-var layerGoToSlide = function(layer, slide) {
-  $('#layer-' + layer).slick('slickGoTo', slide);
+var layerGoToSlide = function(fromPos, toPos) {
+  $('#layer-' + toPos[0]).slick('slickGoTo', toPos[1]);
+  focusLayer(toPos[0]);
+  fromPos[1] = 0;
+  highlightLink(fromPos, toPos);
+  checkHideOverlay();
 }
-
 
 var getLayerNumber = function(layerDOM) {
   var layer = parseInt(layerDOM.closest('.layer').attr('id').split('-')[1]);
@@ -335,12 +541,22 @@ var getLayerCurrentCard = function(layer) {
   return slide;
 }
 
-var scrollToCard = function(layer, slide) { //Not sure whether this is working?
-  if (layer > 0) {
-    var slideN = parseInt(slide) + 1;
-    var cardDOM = $('#layer-' + layer).find('.card:nth-child(' + slideN + ')');
-    var scrollPos = cardDOM.offset().top + cardDOM.height() - document.body.clientHeight + 30;
-    $('html,body').stop().animate({scrollTop: scrollPos},'medium');
+var scrollToLayer = function(layer) {
+  var layerDOM = $('#layer-' + layer);
+  try {
+    var scrollPos = layerDOM.offset().top + layerDOM.height() - document.body.clientHeight + 30;
+  } catch(e) {
+
+  }
+  $('html,body').stop().animate({scrollTop: scrollPos},'medium');
+}
+
+//This also un-highlights every single other link in all cards on all layers
+var highlightLink = function(fromPos, toPos) {
+  if (Array.isArray(fromPos)) {
+    var slideN = parseInt(fromPos[1]) + 1;
+    $('.card-carousel.layer').find('.body-content a').removeClass('active');
+    $($('.card-carousel.layer#layer-' + fromPos[0]).find('.card:not(.removed)')[fromPos[1]]).find('.body-content a:nth-child(' + (toPos[1]+1) + ')').addClass('active');
   }
 }
 
@@ -360,46 +576,18 @@ $(".cards").on("click", "a", function(event){
     if (state.embedLinkRoute) {
       window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
     } else {
-      var slide = $(this).index();
-      var slideFrom = $(this).closest('.card').index();//.slick('slickCurrentSlide');
-      var layer = getLayerNumber($(this));
-      var allKeys = [];
-      $.each($(this).closest('.body-content').find('a'), function(i, link) {
-        allKeys.push($(link).attr('href'));//.substring(1));
-      });
-      layer++;
-      if (layer == state.layers) {
-        openLayer(layer, allKeys, slide, slideFrom, -1);
-      } else if (slide == $('#layer-' + layer).slick('slickCurrentSlide')) {
-        closeLayer(state.layers-1, true);
-      } else {
-        layerGoToSlide(layer, slide);
-      }
+      showCard($(this), 'link');
     }
   }
 });
 $(".cards").on("click", "div.close", function(event){
   event.stopPropagation();
-  // var card = $(this).closest('.card');
   layer = getLayerNumber($(this));
-  closeLayer(layer, true);
+  showCard($(this), 'close');
 });
 $(".cards").on("click", ".card", function(event){
   event.stopPropagation();
-  var layer = getLayerNumber($(this));
-  var targetLayer = layer + 1;
-  if(!$(event.target).is("a") && !$(event.target).is("div.close") && !$(event.target).is(".edit-button") && !$(event.target).is(".edit-button i") ) {
-    targetLayer--;
-    if (layer == state.layers-1) {
-      var slide = $(this).closest('.card').index();
-      layerGoToSlide(layer, slide);
-    }
-  }
-  if (targetLayer < state.layers - 1) {
-    for (i = state.layers - 1; i > targetLayer; i--) {
-      closeLayer(i, true);
-    }
-  }
+  showCard($(this), 'select');
 });
 $(".cards").on("click", ".card .edit-button", function(event){
   event.stopPropagation();
@@ -431,19 +619,9 @@ $(".cards").on("click", ".card .content.Question .answers:not(.answered) .answer
 // On before slide change
 $('.cards').on('beforeChange', '.card-carousel', function(event, slick, currentSlide, nextSlide){
   var layer = getLayerNumber($(this));
-  highlightLink(layer, nextSlide);
-
-  scrollToCard(layer, nextSlide);
-  // var scrollPos = cardDOM.offset().top + cardDOM.find('.card').height() - document.body.clientHeight + 20;
-  // $('html,body').stop().animate({scrollTop: scrollPos},'medium');
+  highlightLink( [layer-1, 0], [layer, nextSlide] );
+  scrollToLayer(layer);
 });
-
-var highlightLink = function(layer, slide) {
-  layer--;
-  var slideN = parseInt(slide) + 1;
-  $('#layer-' + layer).find('.body-content a').removeClass('active');
-  $('#layer-' + layer).find('.body-content a:nth-child(' + slideN + ')').addClass('active');
-}
 
 
 $(document).keydown(function(e) {
@@ -480,7 +658,7 @@ var checkSync = function() {
     var focusedDOM = !$(card).hasClass('faded');
     var focusedData = i == focusPosition[0];
     var keyDOM = getKeyFromCardDOM(0,i);
-    var keyData = cardLists[0][i];
+    // var keyData = cardLists[0][i]; // cardLists no longer exists!
     if (focusedDOM != focusedData || keyDOM != keyData) {
       inSync = false;
     }
@@ -498,22 +676,6 @@ $('.cards').on("click", function() {
 });
 
 
-
-var printCards = function() {
-  window.setTimeout(function() {
-    $.each(cardLists[0], function(i, key) {
-      var focused = i == focusPosition[0] ? '*' : '';
-      console.log(focused + i + ' - ' + key + ': ' + cards[key].title);
-    });
-    console.log('---------------');
-    $('.card:not(.removed)').each(function(i, card) {
-      var focused = !$(card).hasClass('faded') ? '*' : '';
-      var key = getKeyFromCardDOM(0,i);
-      console.log(focused + i + ' - ' + key + ': ' + cards[key].title);
-    });
-    console.log('===============');
-  }, 100);
-}
 
 $( window ).resize(function() {
   $('.card').each(function() {
@@ -537,7 +699,9 @@ window.addEventListener('message', function(event) {
    switch (event.data.action) {
       case "open":
         closeAllLayers(false);
-        openLayer(0, [event.data.key], 0, 0);
+        console.log(event);
+        // openLayer(0, [event.data.key], 0, 0);
+        showCard(event.data.key, 'open');
         break;
       }
  }, false);
@@ -618,3 +782,23 @@ function urlDomain(data) {
          a.href = data;
   return data ? a.hostname : null;
 }
+
+
+//Modified version from use.explaain.com - not yet fully tested and should probably merge the two somehow!
+checkExplaainLink = function(target) {
+  var href = target;
+  if ( target.tagName === 'A' || ( target.parentNode && target.parentNode.tagName === 'A' ) ) {
+    href = target.getAttribute('href') || target.parentNode.getAttribute('href');
+  }
+
+  var acceptableDomains = ['api.explaain.com\/.+', 'app.explaain.com\/.+', 'api.dev.explaain.com\/.+', 'app.dev.explaain.com\/.+']
+  if (new RegExp(RegExp.escape(acceptableDomains.join("|")).replace(/\\\|/g,'|').replace(/\\\.\\\+/g,'.+')).test(href)) {
+    return href;
+  } else {
+    return false
+  }
+}
+
+RegExp.escape = function(str) {
+  return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+};

@@ -200,7 +200,7 @@ body.embed .cards {
   color: #ff6e73;
 }
 
-.cards .card-carousel:nth-last-child(1) .card .card-visible > div.close {
+.cards .card-carousel:nth-last-child(1) .card.slick-current .card-visible > div.close {
   display: block; /* Diplays only in last layer... */
 }
 .cards .card-carousel:nth-child(1) .card .card-visible > div.close {
