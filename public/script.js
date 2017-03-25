@@ -255,19 +255,12 @@ var showCard = function(triggerTarget, triggerType) {
       break;
   }
 
-  console.log(toURI, toPos, toDOM, fromPos, fromDOM, toLayerKeys);
-
   var layerManipPromises = [];
-
-  console.log(toPos[0]);
-  console.log(state.layers);
-  console.log(toPos[0] + 1 - state.layers);
 
   switch ( Math.sign(toPos[0] + 1 - state.layers) ) {
     case (+1):
       //Opening on a new layer
       layerManipPromises[0] = openLayer(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
-      console.log(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
       break;
 
     case (0):
@@ -318,7 +311,6 @@ var getTargetType = function(target) {
 
 // Whether target is a URI, Position or DOM element, this returns the relevant card URI or 'a' element's href attribute
 var getTargetURI = function(target, type) {
-  console.log(target, type, getTargetType(target));
   var uri;
   switch (getTargetType(target)) {
     case 'URI':
@@ -344,7 +336,6 @@ var getTargetURI = function(target, type) {
     uri = -1;
   }
 
-  console.log(uri);
   return uri;
 }
 
@@ -508,7 +499,6 @@ var focusLayer = function(layer) {
   var slideFrom = $('#layer-' + layer).attr('slide-from');
   var slideFromN = parseInt(slideFrom) + 1;
   if (layer > 1) {
-    console.log(slideFromN);
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('.card').addClass('removed');
     $('#layer-' + prevLayer).find('.card:nth-child(' + slideFromN + ')').removeClass('removed');
@@ -699,8 +689,6 @@ window.addEventListener('message', function(event) {
    switch (event.data.action) {
       case "open":
         closeAllLayers(false);
-        console.log(event);
-        // openLayer(0, [event.data.key], 0, 0);
         showCard(event.data.key, 'open');
         break;
       }
