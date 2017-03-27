@@ -58,8 +58,12 @@ var getCards = function(key) {
   } else {
     importCards(key)
     .then(function(returnedCards) {
+      console.log(returnedCards);
       deferred.resolve(returnedCards);
     })
+    .fail(function(err) {
+      console.log(6);
+    });
   }
 
   return deferred.promise;
@@ -81,7 +85,8 @@ var importCards = function(url) { //Always returns an array
     }
     deferred.resolve(json);
   }).fail(function(){
-    deferred.resolve([]);
+    console.log(5);
+    deferred.reject(new Error(404));
   });
 
   return deferred.promise;
@@ -89,13 +94,18 @@ var importCards = function(url) { //Always returns an array
 
 var getDataUrl = function(key) {
   var url = key;
-  url = url.replace('app.explaain.com', 'api.explaain.com');
-  url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com');
-  url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource);
-  url = url.replace('/cards/', '/Detail/');
-  if (window.location.protocol == 'https:') {
-    url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com');
-    url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com');
+  try {
+    url = url.replace('app.explaain.com', 'api.explaain.com');
+    url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com');
+    url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource);
+    url = url.replace('/cards/', '/Detail/');
+    url = url.replace('/Detail/load', '/cards/load');
+    if (window.location.protocol == 'https:') {
+      url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com');
+      url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com');
+    }
+  } catch(err) {
+    return url;
   }
   return url;
 }
@@ -117,7 +127,8 @@ function updateCard(uri) {
 }
 
 function updateCardDOM(uri, json) {
-  if (!json) {
+  console.log(json);
+  if (json.error) {
     json = {
       title: '',
       body: 'Card not found',
@@ -143,6 +154,10 @@ var initialUrl = state.cardUrl || state.searchUrl; // Not sure whether we still 
 
 if (initialCardType && initialCardID) {
   initialUrl = defaultSource + '/' + initialCardType + '/' + initialCardID;
+}
+
+if (initialQuery) {
+  initialUrl = defaultSource + '/cards/load?name=' + initialQuery;
 }
 
 if (!initialUrl && state.embedType != 'overlay') {
@@ -179,6 +194,11 @@ var getIfNecessary = function(path, necessaryObject, necessaryProperty) {
 var getTemplate = function(type) {
   var deferred = Q.defer();
 
+  console.log(type);
+  if (!type) {
+    type = "Detail";
+  }
+
   getIfNecessary('/cards/' + type + '.mst', CardTemplates, type)
   .then(function() {
     deferred.resolve();
@@ -191,6 +211,8 @@ var getCardFormatTemplate = function(card) {
   var deferred = Q.defer();
 
   var type = getCardType(card);
+  console.log(card);
+  console.log(type);
   getTemplate(type)
   .then(function() {
     var rendered = Mustache.render(CardTemplates[type], card);
@@ -203,6 +225,7 @@ var getCardFormatTemplate = function(card) {
 var getCardTemplate = function(card) {
   var deferred = Q.defer();
 
+  console.log(3);
   getCardFormatTemplate(card)
   .then(function(formatTemplate) {
     getTemplate('card')
@@ -412,6 +435,8 @@ var checkHideOverlay = function() {
 var openLayer = function(layer, keys, slide, slideFrom) {
   var deferred = Q.defer();
 
+  console.log(keys);
+
   $('.layer a').removeClass('active');
   var template = '';
   var getCardPromises = [];
@@ -420,6 +445,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
     var key = getDataUrl(key); //Should we maybe call this "url" from here onwards?
     getCardPromises[i] = getCards(key)
     .then(function(returnedCards) {
+      console.log(returnedCards);
       var card = returnedCards[0];
       templatePromises[i] = getCardTemplate(card, false);
     })
@@ -723,6 +749,9 @@ function addStyleString(str) {
 }
 
 var parseCard = function(card) {
+  console.log(1);
+  if (card.error) {
+  }
   card = parseCardEncodes(card);
   card = parseCardMarkdown(card);
   return card;
