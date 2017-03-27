@@ -58,11 +58,9 @@ var getCards = function(key) {
   } else {
     importCards(key)
     .then(function(returnedCards) {
-      console.log(returnedCards);
       deferred.resolve(returnedCards);
     })
     .fail(function(err) {
-      console.log(6);
     });
   }
 
@@ -73,21 +71,24 @@ var importCards = function(url) { //Always returns an array
   var deferred = Q.defer();
 
   url = getDataUrl(url); //Possibly unnecessary as it already happens in openLayer()
-  $.ajax({
-     url: url
-  }).done(function(json) {
-    if (!Array.isArray(json)) { //If not already an array, then converts into an array of one item
-      json = [json];
-    }
-    for (var i in json) {
-      json[i] = parseCard(json[i]);
-      publishCard(json[i]);
-    }
-    deferred.resolve(json);
-  }).fail(function(){
-    console.log(5);
-    deferred.reject(new Error(404));
-  });
+  if (url == -1) {
+    deferred.resolve( [ { id: -1, description: "No card found" } ] );
+  } else {
+    $.ajax({
+      url: url
+    }).done(function(json) {
+      if (!Array.isArray(json)) { //If not already an array, then converts into an array of one item
+        json = [json];
+      }
+      for (var i in json) {
+        json[i] = parseCard(json[i]);
+        publishCard(json[i]);
+      }
+      deferred.resolve(json);
+    }).fail(function(){
+      deferred.resolve([{ id: -1, description: "No card found" }]);
+    });
+  }
 
   return deferred.promise;
 }
@@ -127,7 +128,6 @@ function updateCard(uri) {
 }
 
 function updateCardDOM(uri, json) {
-  console.log(json);
   if (json.error) {
     json = {
       title: '',
@@ -173,7 +173,7 @@ if (initialUrl) {
 }
 
 var getCardType = function(card) {
-  return card['@type'] ? /[^/]*$/.exec(card['@type'])[0] : 'card';
+  return card['@type'] ? /[^/]*$/.exec(card['@type'])[0] : 'Detail';
 }
 
 var getIfNecessary = function(path, necessaryObject, necessaryProperty) {
@@ -194,7 +194,6 @@ var getIfNecessary = function(path, necessaryObject, necessaryProperty) {
 var getTemplate = function(type) {
   var deferred = Q.defer();
 
-  console.log(type);
   if (!type) {
     type = "Detail";
   }
@@ -211,8 +210,6 @@ var getCardFormatTemplate = function(card) {
   var deferred = Q.defer();
 
   var type = getCardType(card);
-  console.log(card);
-  console.log(type);
   getTemplate(type)
   .then(function() {
     var rendered = Mustache.render(CardTemplates[type], card);
@@ -225,7 +222,6 @@ var getCardFormatTemplate = function(card) {
 var getCardTemplate = function(card) {
   var deferred = Q.defer();
 
-  console.log(3);
   getCardFormatTemplate(card)
   .then(function(formatTemplate) {
     getTemplate('card')
@@ -435,7 +431,6 @@ var checkHideOverlay = function() {
 var openLayer = function(layer, keys, slide, slideFrom) {
   var deferred = Q.defer();
 
-  console.log(keys);
 
   $('.layer a').removeClass('active');
   var template = '';
@@ -445,9 +440,8 @@ var openLayer = function(layer, keys, slide, slideFrom) {
     var key = getDataUrl(key); //Should we maybe call this "url" from here onwards?
     getCardPromises[i] = getCards(key)
     .then(function(returnedCards) {
-      console.log(returnedCards);
       var card = returnedCards[0];
-      templatePromises[i] = getCardTemplate(card, false);
+      templatePromises[i] = getCardTemplate(card);
     })
   });
 
@@ -682,7 +676,6 @@ var checkSync = function() {
   return inSync;
 }
 var reDrawCards = function() { // If DOM cards don't match card data then run this to sort everything out (currently just refocuses correctly)
-  console.log('Something got out of sync so we\'re redrawing the cards in the DOM');
   focusCard(0,focusPosition[0]);
 }
 
@@ -749,7 +742,6 @@ function addStyleString(str) {
 }
 
 var parseCard = function(card) {
-  console.log(1);
   if (card.error) {
   }
   card = parseCardEncodes(card);
