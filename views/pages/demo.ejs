@@ -68,9 +68,10 @@
   <script src="/include/js/q.js"></script>
   <script>
     var touchscreen = <%= touchscreen %>;
-    var defaultSource = '<%= defaultSource %>';
-    var initialCardType = '<%= initialCardType %>';
-    var initialCardID = '<%= initialCardID %>';
+    var defaultSource =   '<%= typeof defaultSource   != "undefined" ? defaultSource   : "" %>';
+    var initialCardType = '<%= typeof initialCardType != "undefined" ? initialCardType : "" %>';
+    var initialCardID =   '<%= typeof initialCardID   != "undefined" ? initialCardID   : "" %>';
+    var initialQuery =    '<%= typeof initialQuery    != "undefined" ? initialQuery    : "" %>';
 
     function getParameterByName(name, url) {
         if (!url) url = window.location.href;

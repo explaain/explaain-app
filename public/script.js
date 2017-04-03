@@ -60,6 +60,8 @@ var getCards = function(key) {
     .then(function(returnedCards) {
       deferred.resolve(returnedCards);
     })
+    .fail(function(err) {
+    });
   }
 
   return deferred.promise;
@@ -69,33 +71,42 @@ var importCards = function(url) { //Always returns an array
   var deferred = Q.defer();
 
   url = getDataUrl(url); //Possibly unnecessary as it already happens in openLayer()
-  $.ajax({
-     url: url
-  }).done(function(json) {
-    if (!Array.isArray(json)) { //If not already an array, then converts into an array of one item
-      json = [json];
-    }
-    for (var i in json) {
-      json[i] = parseCard(json[i]);
-      publishCard(json[i]);
-    }
-    deferred.resolve(json);
-  }).fail(function(){
-    deferred.resolve([]);
-  });
+  if (url == -1) {
+    deferred.resolve( [ { id: -1, description: "No card found" } ] );
+  } else {
+    $.ajax({
+      url: url
+    }).done(function(json) {
+      if (!Array.isArray(json)) { //If not already an array, then converts into an array of one item
+        json = [json];
+      }
+      for (var i in json) {
+        json[i] = parseCard(json[i]);
+        publishCard(json[i]);
+      }
+      deferred.resolve(json);
+    }).fail(function(){
+      deferred.resolve([{ id: -1, description: "No card found" }]);
+    });
+  }
 
   return deferred.promise;
 }
 
 var getDataUrl = function(key) {
   var url = key;
-  url = url.replace('app.explaain.com', 'api.explaain.com');
-  url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com');
-  url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource);
-  url = url.replace('/cards/', '/Detail/');
-  if (window.location.protocol == 'https:') {
-    url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com');
-    url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com');
+  try {
+    url = url.replace('app.explaain.com', 'api.explaain.com');
+    url = url.replace('app.dev.explaain.com', 'api.dev.explaain.com');
+    url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource);
+    url = url.replace('/cards/', '/Detail/');
+    url = url.replace('/Detail/load', '/cards/load');
+    if (window.location.protocol == 'https:') {
+      url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com');
+      url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com');
+    }
+  } catch(err) {
+    return url;
   }
   return url;
 }
@@ -117,7 +128,7 @@ function updateCard(uri) {
 }
 
 function updateCardDOM(uri, json) {
-  if (!json) {
+  if (json.error) {
     json = {
       title: '',
       body: 'Card not found',
@@ -145,6 +156,10 @@ if (initialCardType && initialCardID) {
   initialUrl = defaultSource + '/' + initialCardType + '/' + initialCardID;
 }
 
+if (initialQuery) {
+  initialUrl = defaultSource + '/cards/load?name=' + initialQuery;
+}
+
 if (!initialUrl && state.embedType != 'overlay') {
   initialUrl = defaultSource + '/Person/search?name=hammond';
 }
@@ -158,7 +173,7 @@ if (initialUrl) {
 }
 
 var getCardType = function(card) {
-  return card['@type'] ? /[^/]*$/.exec(card['@type'])[0] : 'card';
+  return card['@type'] ? /[^/]*$/.exec(card['@type'])[0] : 'Detail';
 }
 
 var getIfNecessary = function(path, necessaryObject, necessaryProperty) {
@@ -178,6 +193,10 @@ var getIfNecessary = function(path, necessaryObject, necessaryProperty) {
 
 var getTemplate = function(type) {
   var deferred = Q.defer();
+
+  if (!type) {
+    type = "Detail";
+  }
 
   getIfNecessary('/cards/' + type + '.mst', CardTemplates, type)
   .then(function() {
@@ -255,19 +274,12 @@ var showCard = function(triggerTarget, triggerType) {
       break;
   }
 
-  console.log(toURI, toPos, toDOM, fromPos, fromDOM, toLayerKeys);
-
   var layerManipPromises = [];
-
-  console.log(toPos[0]);
-  console.log(state.layers);
-  console.log(toPos[0] + 1 - state.layers);
 
   switch ( Math.sign(toPos[0] + 1 - state.layers) ) {
     case (+1):
       //Opening on a new layer
       layerManipPromises[0] = openLayer(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
-      console.log(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
       break;
 
     case (0):
@@ -318,7 +330,6 @@ var getTargetType = function(target) {
 
 // Whether target is a URI, Position or DOM element, this returns the relevant card URI or 'a' element's href attribute
 var getTargetURI = function(target, type) {
-  console.log(target, type, getTargetType(target));
   var uri;
   switch (getTargetType(target)) {
     case 'URI':
@@ -344,7 +355,6 @@ var getTargetURI = function(target, type) {
     uri = -1;
   }
 
-  console.log(uri);
   return uri;
 }
 
@@ -421,6 +431,7 @@ var checkHideOverlay = function() {
 var openLayer = function(layer, keys, slide, slideFrom) {
   var deferred = Q.defer();
 
+
   $('.layer a').removeClass('active');
   var template = '';
   var getCardPromises = [];
@@ -430,7 +441,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
     getCardPromises[i] = getCards(key)
     .then(function(returnedCards) {
       var card = returnedCards[0];
-      templatePromises[i] = getCardTemplate(card, false);
+      templatePromises[i] = getCardTemplate(card);
     })
   });
 
@@ -508,7 +519,6 @@ var focusLayer = function(layer) {
   var slideFrom = $('#layer-' + layer).attr('slide-from');
   var slideFromN = parseInt(slideFrom) + 1;
   if (layer > 1) {
-    console.log(slideFromN);
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('.card').addClass('removed');
     $('#layer-' + prevLayer).find('.card:nth-child(' + slideFromN + ')').removeClass('removed');
@@ -666,7 +676,6 @@ var checkSync = function() {
   return inSync;
 }
 var reDrawCards = function() { // If DOM cards don't match card data then run this to sort everything out (currently just refocuses correctly)
-  console.log('Something got out of sync so we\'re redrawing the cards in the DOM');
   focusCard(0,focusPosition[0]);
 }
 
@@ -699,8 +708,6 @@ window.addEventListener('message', function(event) {
    switch (event.data.action) {
       case "open":
         closeAllLayers(false);
-        console.log(event);
-        // openLayer(0, [event.data.key], 0, 0);
         showCard(event.data.key, 'open');
         break;
       }
@@ -735,6 +742,8 @@ function addStyleString(str) {
 }
 
 var parseCard = function(card) {
+  if (card.error) {
+  }
   card = parseCardEncodes(card);
   card = parseCardMarkdown(card);
   return card;

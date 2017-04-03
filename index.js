@@ -37,7 +37,7 @@ var getTouchscreen = function(request) {
 
 app.get('/', function(request, response) {
   var touchscreen = getTouchscreen(request);
-  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, initialCardType: null , initialCardID: null });
+  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE });
 });
 
 // app.get('/cards/:id', function(req, res) {
@@ -70,6 +70,11 @@ app.get('/', function(request, response) {
 //   });
 //
 // });
+
+app.get('/cards/load/:query', function(request, response) {
+  var touchscreen = getTouchscreen(request);
+  response.render('pages/demo', { touchscreen : touchscreen, defaultSource : process.env.SOURCE, initialQuery: request.params.query });
+});
 
 app.get('/:type/:cardID', function(request, response) {
   var touchscreen = getTouchscreen(request);
