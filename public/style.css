@@ -279,12 +279,23 @@ h2 {
   text-decoration: none;
   color: #333;
 }
+.card .content a.external:before {
+   font-family: FontAwesome;
+   content: "\f08e";
+   margin-right: 4px;
+   color: #777;
+   font-size: 0.9em;
+}
 
-.card .content a:hover, .card .content a:active, .card .content a.active {
+.card .content a.active {
   color: white;
   background: #ff6e73;
   border: 2px solid #ff6e73;
 }
+.card .content a.external.active:before {
+  color: white;
+}
+
 
 /*.body-content a, .more-detail a {
   padding: 0 3px;
@@ -423,11 +434,15 @@ h2 {
 }
 
 
-body.desktop .body-content a:hover, body.desktop .more-detail a:hover {
+body.desktop .content a:hover, body.desktop .card .content a:active {
   color: white;
   background: #ff6e73;
   border: 2px solid #ff6e73;
 }
+body.desktop .card .content a.external:hover:before {
+   color: white;
+}
+
 body.desktop .card .card-visible > div.close {
   opacity: 0;
 }
