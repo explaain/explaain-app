@@ -111,6 +111,14 @@ var getDataUrl = function(key) {
   return url;
 }
 
+var isExplaainLink = function(url) {
+  if (url.indexOf('.explaain.com') != -1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 var importCardsByType = function(source, type) { //Quite possibly no longer needed
   source = source.replace(/\/$/, "");
@@ -417,7 +425,10 @@ var getCardPosition = function(target) {
 var getCardLinks = function(target) {
   var allKeys = [];
   $.each($(target).find('.body-content').find('a'), function(i, link) {
-    allKeys.push($(link).attr('href'));
+    var url = $(link).attr('href');
+    if (isExplaainLink(url)) {
+      allKeys.push(url);
+    }
   });
   return allKeys;
 }
@@ -459,6 +470,13 @@ var openLayer = function(layer, keys, slide, slideFrom) {
       cardDOM = $(template).appendTo('.cards');
 
       $.each(keys, function(j, key) {
+        $('.card[data-uri="' + key + '"]').find('a').each(function(index) {
+          if ( isExplaainLink($(this).attr('href')) ) {
+            $(this).addClass('internal');
+          } else {
+            $(this).addClass('external');
+          }
+        });
         var key = getDataUrl(key);
         $( '.card[data-uri="' + key + '"] .card-image img' ).load(function() { //Forces another Slick refresh after image load (should be cleaned up using Q promises!)
           $('.card[data-uri="' + key + '"]').closest('.card-carousel.layer').slick('setPosition');
@@ -521,7 +539,7 @@ var focusLayer = function(layer) {
   if (layer > 1) {
     var prevLayer = layer - 1;
     $('#layer-' + prevLayer).find('.card').addClass('removed');
-    $('#layer-' + prevLayer).find('.card:nth-child(' + slideFromN + ')').removeClass('removed');
+    $('#layer-' + prevLayer).find('.card:nth-of-type(' + slideFromN + ')').removeClass('removed');
     $('#layer-' + prevLayer).slick('slickSetOption', 'swipe', false);
     // $('#layer-' + prevLayer).slick('slickSetOption', 'dots', false);
   }
@@ -566,7 +584,7 @@ var highlightLink = function(fromPos, toPos) {
   if (Array.isArray(fromPos)) {
     var slideN = parseInt(fromPos[1]) + 1;
     $('.card-carousel.layer').find('.body-content a').removeClass('active');
-    $($('.card-carousel.layer#layer-' + fromPos[0]).find('.card:not(.removed)')[fromPos[1]]).find('.body-content a:nth-child(' + (toPos[1]+1) + ')').addClass('active');
+    $($('.card-carousel.layer#layer-' + fromPos[0]).find('.card:not(.removed)')[fromPos[1]]).find('.body-content a.internal:eq(' + (toPos[1]) + ')').addClass('active');
   }
 }
 
@@ -580,14 +598,19 @@ $("body > .body-double").on("click", function(event){
   }
 });
 $(".cards").on("click", "a", function(event){
-  if ($(this).attr('href') != "http://explaain.com") { //Probably need a better way of doing this!
+  var url = $(this).attr('href');
+  if ( isExplaainLink(url) ) {
     event.preventDefault();
     event.stopPropagation();
     if (state.embedLinkRoute) {
-      window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  $(this).attr('href')}, "*");
+      window.parent.postMessage({ frameId: state.frameId, action: 'explaain-open', url:  url}, "*");
     } else {
       showCard($(this), 'link');
     }
+  } else {
+    event.preventDefault();
+    event.stopPropagation();
+    window.open(url);
   }
 });
 $(".cards").on("click", "div.close", function(event){
@@ -614,7 +637,7 @@ $(".cards").on("click", ".card .content.Question .answers:not(.answered) .answer
     $(this).closest('.content').addClass('answered');
     $(this).closest('.answer').addClass('selected');
     var key = $(this).closest('.card').attr('data-uri');
-    $(this).closest('.answers').find('.answer:nth-child(' + cards[key].correctAnswer + ')').addClass('correct');
+    $(this).closest('.answers').find('.answer:nth-of-type(' + cards[key].correctAnswer + ')').addClass('correct');
     var correct = parseInt(cards[key].correctAnswer) == $(this).closest('.answer').index() + 1;
     window.parent.postMessage({ frameId: state.frameId, action: 'explaain-answer', correct: correct}, "*");
   }
@@ -629,6 +652,7 @@ $(".cards").on("click", ".card .content.Question .answers:not(.answered) .answer
 // On before slide change
 $('.cards').on('beforeChange', '.card-carousel', function(event, slick, currentSlide, nextSlide){
   var layer = getLayerNumber($(this));
+  console.log([layer-1, 0], [layer, nextSlide]);
   highlightLink( [layer-1, 0], [layer, nextSlide] );
   scrollToLayer(layer);
 });
