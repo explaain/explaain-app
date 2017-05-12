@@ -5,7 +5,6 @@ var focusPosition = [];
 var tempCards;
 var waitingForDoctop = true;
 var ongoingKeyCounter = 0;
-state.layers = 0;
 var CardTemplates = {};
 
 var Count = 0;
@@ -25,6 +24,11 @@ state.cardUrl = getParameterByName('cardUrl');
 state.searchUrl = getParameterByName('searchUrl');
 state.embedLinkRoute = getParameterByName('embedLinkRoute') == "true";
 state.editing = getParameterByName('editing') == "true";
+
+
+var getNumberofLayers = function() {
+  return $('.cards .card-carousel.layer:not(.removed)').length;
+}
 
 
 if (state.embed) {
@@ -284,7 +288,7 @@ var showCard = function(triggerTarget, triggerType) {
 
   var layerManipPromises = [];
 
-  switch ( Math.sign(toPos[0] + 1 - state.layers) ) {
+  switch ( Math.sign(toPos[0] + 1 - getNumberofLayers()) ) {
     case (+1):
       //Opening on a new layer
       layerManipPromises[0] = openLayer(toPos[0], toLayerKeys, toPos[1], fromPos[1]);
@@ -297,7 +301,7 @@ var showCard = function(triggerTarget, triggerType) {
 
     case (-1):
       //Opening on a previous layer (meaning we also close existing layers)
-      for(i = toPos[0] + 1; i < state.layers; i++) {
+      for(i = toPos[0] + 1; i < getNumberofLayers(); i++) {
         layerManipPromises[i - toPos[0] - 1] = closeLayer(i, true);
       }
       break;
@@ -305,7 +309,6 @@ var showCard = function(triggerTarget, triggerType) {
 
   Q.allSettled(layerManipPromises)
   .then(function() {
-    state.layers = toPos[0] + 1;
     layerGoToSlide(fromPos, toPos);
   });
 
@@ -434,7 +437,7 @@ var getCardLinks = function(target) {
 }
 
 var checkHideOverlay = function() {
-  if (state.layers == 0) {
+  if (getNumberofLayers() == 0) {
     hideOverlay();
   }
 }
@@ -515,9 +518,7 @@ var closeLayer = function(layer, allowHideOverlay) {
   $('#layer-' + layer).find('.card').addClass('removed');
   $('#layer-' + layer).fadeOut(500, function() { $(this).remove(); });
 
-  if (state.layers == 0 && allowHideOverlay) {
-    hideOverlay();
-  }
+  checkHideOverlay();
 
   deferred.resolve();
 
@@ -525,10 +526,9 @@ var closeLayer = function(layer, allowHideOverlay) {
 }
 
 var closeAllLayers = function(thenHideOverlay) {
-  for (i=state.layers-1; i>=0; i--) {
+  for (i=getNumberofLayers()-1; i>=0; i--) {
     closeLayer(i, thenHideOverlay);
   }
-  state.layers = 0;
 }
 
 var focusLayer = function(layer) {
@@ -679,7 +679,7 @@ $(document).keydown(function(e) {
     e.preventDefault(); // prevent the default action (scroll / move caret)
 });
 
-var reDrawIfOutOfSync = function() {
+var reDrawIfOutOfSync = function() { // Think none of this is necessary anymore????
   window.setTimeout(function() {
     if (!checkSync()) {
       reDrawCards();
@@ -687,19 +687,22 @@ var reDrawIfOutOfSync = function() {
   }, 500);
 }
 var checkSync = function() {
+  console.log('Checking whether in sync');
   var inSync = true;
   $('.card:not(.removed)').each(function(i, card) {
     var focusedDOM = !$(card).hasClass('faded');
     var focusedData = i == focusPosition[0];
-    var keyDOM = getKeyFromCardDOM(0,i);
+    var keyDOM = getTargetURI($(card),'card');
     // var keyData = cardLists[0][i]; // cardLists no longer exists!
     if (focusedDOM != focusedData || keyDOM != keyData) {
+      console.log('DOM and data are not in sync!');
       inSync = false;
     }
   });
   return inSync;
 }
 var reDrawCards = function() { // If DOM cards don't match card data then run this to sort everything out (currently just refocuses correctly)
+  console.log('Redrawing cards');
   focusCard(0,focusPosition[0]);
 }
 
