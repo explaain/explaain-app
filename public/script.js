@@ -653,7 +653,6 @@ $(".cards").on("click", ".card .content.Question .answers:not(.answered) .answer
 // On before slide change
 $('.cards').on('beforeChange', '.card-carousel', function(event, slick, currentSlide, nextSlide){
   var layer = getLayerNumber($(this));
-  console.log([layer-1, 0], [layer, nextSlide]);
   highlightLink( [layer-1, 0], [layer, nextSlide] );
   scrollToLayer(layer);
 });
@@ -737,6 +736,20 @@ window.addEventListener('message', function(event) {
       case "open":
         closeAllLayers(false);
         showCard(event.data.key, 'open');
+        break;
+      }
+ }, false);
+
+window.addEventListener('message', function(event) {
+   switch (event.data.action) {
+      case "import":
+        var urls = event.data.urls;
+        if (!Array.isArray(urls)) {
+          urls = [urls];
+        }
+        urls.forEach(function(url) {
+          importCards(url);
+        })
         break;
       }
  }, false);
