@@ -515,6 +515,7 @@ var openLayer = function(layer, keys, slide, slideFrom) {
 var closeLayer = function(layer, allowHideOverlay) {
   var deferred = Q.defer();
 
+  $('#layer-' + layer).addClass('removed');
   $('#layer-' + layer).find('.card').addClass('removed');
   $('#layer-' + layer).fadeOut(500, function() { $(this).remove(); });
 
