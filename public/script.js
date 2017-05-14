@@ -735,7 +735,11 @@ window.addEventListener('message', function(event) {
    switch (event.data.action) {
       case "open":
         closeAllLayers(false);
-        showCard(event.data.key, 'open');
+        var key = event.data.key;
+        if (event.data.cardData && !cards[key]) {
+          cards[key] = event.data.cardData;
+        }
+        showCard(key, 'open');
         break;
       }
  }, false);
