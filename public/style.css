@@ -433,6 +433,22 @@ h2 {
   height: 0;
 }
 
+.card .card-visible > div.close {
+  position: absolute !important;
+  right: 0;
+}
+.card .content.Headline {
+  margin-top: 0;
+}
+.card .content.Headline div.card-image {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  margin: 0;
+  width: 100%;
+  height: 300px;
+}
+
 
 body.desktop .content a:hover, body.desktop .card .content a:active {
   color: white;

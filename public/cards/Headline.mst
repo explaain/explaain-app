@@ -1,7 +1,16 @@
+<!-- <h2>
+  {{name}}
+</h2>
+<div class="card-image">{{image}}</div>
+<div class="body-content">
+  {{{description}}}
+</div> -->
+
+
+<div class="card-image" style="background:url({{image}})"></div>
 <h2>
   {{name}}
 </h2>
-<!-- <div class="card-image">{{image}}</div> -->
 <div class="body-content">
   {{{description}}}
 </div>
