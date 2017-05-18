@@ -1,0 +1,28 @@
+<h2>
+  {{name}}
+</h2>
+<!-- <div class="card-image">{{image}}</div> -->
+<div class="body-content">
+  {{{description}}}
+</div>
+<div class="matches">
+  {{#matches}}
+    <div class="match">
+      {{#isMatch}}
+        ✓
+      {{/isMatch}}
+      {{^isMatch}}
+        ✗
+      {{/isMatch}}
+      <div class="question">
+        {{{question}}}
+      </div>
+      <div class="userOpinion">
+        {{{userOpinion}}}
+      </div>
+      <div class="partyOpinion">
+        {{{partyOpinion}}}
+      </div>
+    </div>
+  {{/matches}}
+</div>
