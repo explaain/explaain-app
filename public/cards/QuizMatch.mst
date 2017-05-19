@@ -4,25 +4,19 @@
 <!-- <div class="card-image">{{image}}</div> -->
 <div class="body-content">
   {{{description}}}
-</div>
-<div class="matches">
-  {{#matches}}
-    <div class="match">
-      {{#isMatch}}
-        ✓
-      {{/isMatch}}
-      {{^isMatch}}
-        ✗
-      {{/isMatch}}
-      <div class="question">
-        {{{question}}}
+  <div class="matches">
+    {{#matches}}
+      <div class="match">
+        <h3 class="question">
+          {{{question}}}
+        </h3>
+        <div class="userOpinion">
+          <b>Your choice:</b> {{{userOpinion}}}
+        </div>
+        <div class="partyOpinion">
+          <b>Their choice:</b> {{{partyOpinion}}}
+        </div>
       </div>
-      <div class="userOpinion">
-        {{{userOpinion}}}
-      </div>
-      <div class="partyOpinion">
-        {{{partyOpinion}}}
-      </div>
-    </div>
-  {{/matches}}
+    {{/matches}}
+  </div>
 </div>
