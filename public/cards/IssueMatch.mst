@@ -1,0 +1,17 @@
+<h2>
+  {{name}}
+</h2>
+<!-- <div class="card-image">{{image}}</div> -->
+<div class="body-content">
+  {{{description}}}
+  <div class="issues">
+      <table>
+    {{#issues}}
+        <tr>
+            <td><a href="{{{link}}}">{{{name}}}</a></td>
+            <td>{{{score}}}</td>
+        </tr>
+    {{/issues}}
+    </table>
+  </div>
+</div>
