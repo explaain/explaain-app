@@ -739,6 +739,11 @@ window.addEventListener('message', function(event) {
         if (event.data.cardData && !cards[key]) {
           cards[key] = event.data.cardData;
         }
+        if (event.data.cardsData) {
+          Object.keys(event.data.cardsData).forEach(function(_key) {
+            cards[_key] = event.data.cardsData[_key];
+          })
+        }
         showCard(key, 'open');
         break;
       }
