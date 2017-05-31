@@ -30,7 +30,6 @@ var getNumberofLayers = function() {
   return $('.cards .card-carousel.layer:not(.removed)').length;
 }
 
-
 if (state.embed) {
   // Tell the page to resize the iframe after content has loaded into it
   updateFrameSize();
@@ -41,12 +40,6 @@ if (state.embed) {
   });
 }
 
-var hideOverlay = function() {
-  if (state.embedType == 'overlay') {
-    closeAllLayers(false);
-    window.parent.postMessage({ frameId: state.frameId, action: 'explaain-hide-overlay' }, "*");
-  }
-}
 
 var publishCard = function(json) {
   var key = json['@id'];
@@ -746,6 +739,7 @@ window.addEventListener('message', function(event) {
             cards[_key] = event.data.cardsData[_key];
           })
         }
+        $('html').css('pointer-events', 'all');
         showCard(key, 'open');
         break;
       }
@@ -859,6 +853,21 @@ checkExplaainLink = function(target) {
     return false
   }
 }
+
+
+var hideOverlay = function(dontTellParent) {
+  if (state.embedType == 'overlay') {
+    $('html').css('pointer-events', 'none');
+    closeAllLayers(false);
+    if (!dontTellParent)
+      window.parent.postMessage({ frameId: state.frameId, action: 'explaain-hide-overlay' }, "*");
+  }
+}
+
+hideOverlay(true);
+
+
+
 
 RegExp.escape = function(str) {
   return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
