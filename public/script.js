@@ -548,7 +548,7 @@ var focusLayer = function(layer) {
   $('#layer-' + layer).slick('slickSetOption', 'swipe', true);
   // $('#layer-' + layer).slick('slickSetOption', 'dots', true);
 
-  // Rollbar.debug("Layer focused", $('.body-double').height());
+  // Rollbar.debug("Layer focused", {height: $('.body-double').height()});
 }
 
 var layerGoToSlide = function(fromPos, toPos) {
