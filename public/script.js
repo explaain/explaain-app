@@ -105,10 +105,10 @@ var getDataUrl = function(key) {
     url = url.replace(/http:\/\/localhost:[0-9]+/, defaultSource);
     url = url.replace('/cards/', '/Detail/');
     url = url.replace('/Detail/load', '/cards/load');
-    if (window.location.protocol == 'https:') {
-      url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com');
-      url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com');
-    }
+    // if (window.location.protocol == 'https:') {
+    //   url = url.replace('http://api.explaain.com', 'https://explaain-api.herokuapp.com');
+    //   url = url.replace('http://api.dev.explaain.com', 'https://explaain-api-dev.herokuapp.com');
+    // }
   } catch(err) {
     return url;
   }
