@@ -547,6 +547,8 @@ var focusLayer = function(layer) {
   $('#layer-' + layer).find('.card').removeClass('removed');
   $('#layer-' + layer).slick('slickSetOption', 'swipe', true);
   // $('#layer-' + layer).slick('slickSetOption', 'dots', true);
+
+  Rollbar.debug("Layer focused", $('.body-double').height());
 }
 
 var layerGoToSlide = function(fromPos, toPos) {
